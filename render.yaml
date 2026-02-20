@@ -1,12 +1,11 @@
-# Render Blueprint - MonM Backend
-# Connect repo at https://dashboard.render.com
+# Render Blueprint - MonM Backend (FREE tier for testing)
+# Data in /tmp is reset on restart. Upgrade to paid for persistence.
 
 services:
   - type: web
     name: monm-api
     runtime: node
     region: oregon
-    plan: starter
 
     rootDir: backend
     buildCommand: npm install
@@ -25,19 +24,6 @@ services:
       - key: CORS_ORIGINS
         value: https://monm-secure-messaging.netlify.app
       - key: DATA_ROOT
-        value: /data/monm
+        value: /tmp/monm
       - key: DB_PATH
-        value: /data/monm/db/monm.db
-      - key: LOG_PATH
-        value: /data/monm/logs
-      - key: UPLOAD_PATH
-        value: /data/monm/uploads
-      - key: TMP_PATH
-        value: /data/monm/tmp
-      - key: KEYS_PATH
-        value: /data/monm/keys
-
-    disk:
-      name: monm-data
-      mountPath: /data
-      sizeGB: 1
+        value: /tmp/monm/db/monm.db
