@@ -10,8 +10,7 @@ services:
 
     rootDir: backend
     buildCommand: npm install
-    startCommand: node src/index.js
-    preDeployCommand: node scripts/init-db.js
+    startCommand: node scripts/init-db.js && node src/index.js
 
     healthCheckPath: /api/health
 
