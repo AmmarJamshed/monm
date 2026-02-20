@@ -2,67 +2,65 @@
 
 **"People say WhatsApp me → People say MonM me"**
 
-Privacy-first, traceable, anti-leak messaging. Zero blockchain exposure for users.
+Privacy-first, traceable messaging. Install anywhere as a PWA. Zero blockchain exposure for users.
 
 ---
 
-## Quick Start
+## Deploy in 3 Steps
 
-### Prerequisites
-- Node.js 18+
-- npm or pnpm
+### 1. Push to GitHub
 
-### 1. Configure Environment
 ```powershell
-# Copy .env.example to .env (or edit D:\monm\.env)
-# Add your API keys: POLYGON_RPC_KEY, WEB3_STORAGE_TOKEN, GROQ_API_KEY, SERP_API_KEY
-# Optional: BLOCKCHAIN_SIGNER_PRIVATE_KEY for audit logging
+cd D:\monm
+git remote add origin https://github.com/YOUR_USERNAME/monm.git
+git branch -M main
+git push -u origin main
 ```
 
-### 2. Install & Run
-```powershell
-# Initialize database
-cd D:\monm\backend
-npm install
-node scripts/init-db.js
+### 2. Deploy Backend (Render)
 
-# Start backend (Terminal 1)
-npm run dev
+1. https://dashboard.render.com → **New** → **Blueprint**
+2. Connect your GitHub repo → **Apply**
+3. After deploy, add env vars in **monm-api**:
+   - `PWA_URL` = (your Netlify URL – add after step 3)
+   - `CORS_ORIGINS` = (same)
+4. Copy API URL: `https://monm-api-xxxx.onrender.com`
 
-# Start frontend (Terminal 2)
-cd D:\monm\frontend
-npm install
-npm run dev
-```
+### 3. Deploy Frontend (Netlify)
 
-### 3. Open PWA
-Navigate to `http://localhost:3000` — Sign up with name + phone, then install as PWA when prompted.
+1. https://app.netlify.com → **Add new site** → **Import from Git**
+2. Select repo, base directory: `frontend`
+3. **Environment variables:**
+   - `NEXT_PUBLIC_API_URL` = `https://monm-api-xxxx.onrender.com`
+   - `NEXT_PUBLIC_WS_URL` = `wss://monm-api-xxxx.onrender.com`
+4. Deploy → Copy URL: `https://xxxx.netlify.app`
+5. Update Render: set `PWA_URL` and `CORS_ORIGINS` to your Netlify URL, redeploy
 
 ---
 
-## Project Structure
+## Share Your PWA
 
-```
-monm/
-├── frontend/     # Next.js PWA
-├── backend/      # Node.js API + WebSocket
-├── contracts/    # Solidity (Polygon Amoy)
-├── ai-engine/    # Groq + SERP pipelines
-├── deployment/   # Deploy scripts
-└── docs/         # Architecture, API, security
-```
+**Link:** `https://your-site.netlify.app`
+
+Users can **Install** from:
+- Desktop Chrome/Edge: address bar install icon
+- Android: Chrome menu → Install app  
+- iOS: Safari → Share → Add to Home Screen
 
 ---
 
-## Security
+## Cost
 
-- **No wallets** — Users never see blockchain
-- **Custodial signing** — Server holds audit keys
-- **E2E encryption** — AES-256 for messages
-- **Zero plaintext** — Encrypted at rest
+| Service | Plan    | Cost   |
+|---------|---------|--------|
+| Netlify | Free    | $0     |
+| Render  | Starter + 1GB disk | ~$7/mo |
 
 ---
 
-## License
+## Docs
 
-Proprietary — MonM MVP
+- [Full Deployment Guide](docs/DEPLOY.md)
+- [Quick Checklist](DEPLOYMENT_CHECKLIST.md)
+- [API Reference](docs/API.md)
+- [Architecture](docs/ARCHITECTURE.md)

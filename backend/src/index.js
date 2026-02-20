@@ -20,7 +20,7 @@ app.use(cors({
   origin: (o, cb) => {
     if (!o) return cb(null, true);
     const allowed = config.corsOrigins.some((a) => o === a || o.startsWith(a));
-    cb(null, allowed ? o : config.corsOrigins[0]);
+    cb(null, allowed ? o : false);
   },
   credentials: true,
 }));
