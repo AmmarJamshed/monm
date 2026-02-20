@@ -1,0 +1,27 @@
+# Render FREE tier - no disk (data lost on restart). For testing only.
+services:
+  - type: web
+    name: monm-api
+    runtime: node
+    region: oregon
+
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node src/index.js
+    preDeployCommand: node scripts/init-db.js
+
+    healthCheckPath: /api/health
+
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: PWA_URL
+        value: https://monm-secure-messaging.netlify.app
+      - key: CORS_ORIGINS
+        value: https://monm-secure-messaging.netlify.app
+      - key: DATA_ROOT
+        value: /tmp/monm
+      - key: DB_PATH
+        value: /tmp/monm/db/monm.db
