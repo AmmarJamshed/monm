@@ -6,6 +6,7 @@ services:
     name: monm-api
     runtime: node
     region: oregon
+    plan: free
 
     rootDir: backend
     buildCommand: npm install
