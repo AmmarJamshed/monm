@@ -21,9 +21,9 @@ services:
       - key: JWT_SECRET
         generateValue: true
       - key: PWA_URL
-        sync: false   # Set: https://your-site.netlify.app
+        value: https://monm-secure-messaging.netlify.app
       - key: CORS_ORIGINS
-        sync: false   # Set: https://your-site.netlify.app (comma-separated for multiple)
+        value: https://monm-secure-messaging.netlify.app
       - key: DATA_ROOT
         value: /data/monm
       - key: DB_PATH
