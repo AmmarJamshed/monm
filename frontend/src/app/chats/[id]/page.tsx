@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { messages as msgApi, conversations } from '@/lib/api';
 import { encrypt, decrypt, deriveConversationKey } from '@/lib/crypto';
 import { createWS } from '@/lib/ws';
+import MessageBubble from '@/components/MessageBubble';
 
 type Message = {
   id: string;
@@ -13,6 +14,7 @@ type Message = {
   iv: string;
   auth_tag: string;
   created_at: string;
+  decrypted?: string;
 };
 
 export default function ChatPage() {
@@ -23,10 +25,14 @@ export default function ChatPage() {
   const [input, setInput] = useState('');
   const [userId, setUserId] = useState<string | null>(null);
   const [convKey, setConvKey] = useState<CryptoKey | null>(null);
+  const [newMsgIds, setNewMsgIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
+  const convKeyRef = useRef<CryptoKey | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  convKeyRef.current = convKey;
 
   useEffect(() => {
     const u = localStorage.getItem('monm_user');
@@ -47,6 +53,7 @@ export default function ChatPage() {
           : [user.id];
         const key = await deriveConversationKey(id, participantIds);
         setConvKey(key);
+        convKeyRef.current = key;
         const decrypted = await Promise.all(
           list.map(async m => {
             try {
@@ -70,11 +77,15 @@ export default function ChatPage() {
     ws.onmessage = async (e) => {
       const data = JSON.parse(e.data);
       if (data.type === 'new_message' && data.conversationId === id) {
+        const key = convKeyRef.current;
+        if (!key) return;
         const m = data.message;
-        if (!convKey) return;
         try {
-          const text = await decrypt(m.payload_encrypted, m.iv, m.auth_tag, convKey);
-          setMsgs(prev => [...prev, { ...m, decrypted: text }]);
+          const text = await decrypt(m.payload_encrypted, m.iv, m.auth_tag, key);
+          setMsgs(prev => {
+            setNewMsgIds(prevIds => new Set(Array.from(prevIds).concat(m.id)));
+            return [...prev, { ...m, decrypted: text }];
+          });
         } catch {
           setMsgs(prev => [...prev, { ...m, decrypted: '[Unable to decrypt]' }]);
         }
@@ -83,12 +94,6 @@ export default function ChatPage() {
     wsRef.current = ws;
     return () => ws.close();
   }, [id, router]);
-
-  useEffect(() => {
-    const k = convKey;
-    if (!k) return;
-    wsRef.current?.addEventListener?.('message', () => {});
-  }, [convKey]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -102,7 +107,9 @@ export default function ChatPage() {
     try {
       const { ciphertext, iv, authTag } = await encrypt(text, convKey);
       const m = await msgApi.send(id, ciphertext, iv, authTag);
-      setMsgs(prev => [...prev, { ...m, decrypted: text, sender_id: userId }]);
+      const newM = { ...m, decrypted: text, sender_id: userId };
+      setMsgs(prev => [...prev, newM]);
+      setNewMsgIds(prev => new Set(Array.from(prev).concat(m.id)));
     } catch (e) {
       alert((e as Error).message);
       setInput(text);
@@ -111,47 +118,46 @@ export default function ChatPage() {
     }
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center">Loading…</div>;
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-ar-mesh">
+        <div className="text-monm-primary font-medium animate-pulse">Loading…</div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="bg-monm-dark text-white px-4 py-3 flex items-center gap-3">
-        <button onClick={() => router.back()} className="text-white">←</button>
-        <h1 className="flex-1 font-semibold">Chat</h1>
+    <div className="min-h-screen flex flex-col bg-ar-mesh">
+      <header className="glass-panel-strong px-4 py-3 flex items-center gap-3 border-b border-white/5">
+        <button onClick={() => router.back()} className="text-monm-primary text-xl font-bold">←</button>
+        <h1 className="flex-1 font-bold text-white">Chat</h1>
       </header>
-      <main className="flex-1 overflow-auto p-4 space-y-2 bg-monm-bg">
+      <main className="flex-1 overflow-auto p-4 space-y-3">
         {msgs.map(m => (
-          <div
+          <MessageBubble
             key={m.id}
-            className={`flex ${m.sender_id === userId ? 'justify-end' : 'justify-start'}`}
-          >
-            <div
-              className={`max-w-[80%] px-4 py-2 rounded-lg ${
-                m.sender_id === userId ? 'bg-monm-light ml-auto' : 'bg-white'
-              }`}
-            >
-              <p className="text-sm text-gray-500 mb-0.5">
-                {m.sender_id === userId ? 'You' : 'Them'} · {new Date(m.created_at).toLocaleTimeString()}
-              </p>
-              <p>{(m as Message & { decrypted?: string }).decrypted ?? '[Encrypted]'}</p>
-            </div>
-          </div>
+            text={m.decrypted ?? '[Encrypted]'}
+            isMe={m.sender_id === userId}
+            label={m.sender_id === userId ? 'You' : 'Them'}
+            time={new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            isNew={newMsgIds.has(m.id)}
+          />
         ))}
         <div ref={bottomRef} />
       </main>
-      <footer className="p-4 bg-white border-t flex gap-2">
+      <footer className="glass-panel-strong p-4 border-t border-white/5 flex gap-3">
         <input
           type="text"
           placeholder="Type a message..."
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && !e.shiftKey && send()}
-          className="flex-1 px-4 py-3 border rounded-full focus:ring-2 focus:ring-monm-primary"
+          className="flex-1 px-5 py-3 rounded-2xl bg-white/5 border border-white/10 text-white placeholder-white/40 focus:ring-2 focus:ring-monm-primary focus:border-transparent outline-none transition"
         />
         <button
           onClick={send}
           disabled={sending || !input.trim()}
-          className="px-6 py-3 bg-monm-primary text-white rounded-full font-medium disabled:opacity-50"
+          className="px-6 py-3 bg-gradient-to-r from-monm-primary to-emerald-500 text-slate-900 font-bold rounded-2xl disabled:opacity-50 shadow-glow hover:opacity-90 transition disabled:hover:opacity-50"
         >
           Send
         </button>

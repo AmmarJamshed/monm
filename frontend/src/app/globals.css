@@ -3,9 +3,15 @@
 @tailwind utilities;
 
 :root {
-  --monm-primary: #25D366;
-  --monm-dark: #075E54;
-  --monm-light: #DCF8C6;
+  --monm-primary: #00D4AA;
+  --monm-secondary: #7C3AED;
+  --monm-accent: #F472B6;
+  --monm-dark: #0F172A;
+  --monm-bg: #0C0A14;
+  --monm-glass: rgba(255, 255, 255, 0.06);
+  --monm-glass-border: rgba(255, 255, 255, 0.12);
+  --monm-glow: rgba(0, 212, 170, 0.4);
+  --monm-glow-pink: rgba(244, 114, 182, 0.3);
 }
 
 body {
@@ -13,5 +19,61 @@ body {
   -webkit-touch-callout: none;
 }
 
-/* Prevent pull-to-refresh on PWA */
- overscroll-behavior-y: contain;
+html { overscroll-behavior-y: contain; }
+
+/* AR-style gradient mesh background */
+.bg-ar-mesh {
+  background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(124, 58, 237, 0.25), transparent),
+    radial-gradient(ellipse 60% 40% at 100% 50%, rgba(0, 212, 170, 0.15), transparent),
+    radial-gradient(ellipse 50% 30% at 0% 80%, rgba(244, 114, 182, 0.12), transparent),
+    #0C0A14;
+}
+
+/* Glassmorphism panel */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-panel-strong {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* Ping / radar ring animation */
+@keyframes ping-ring {
+  0% { transform: scale(0.8); opacity: 0.8; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+
+@keyframes msg-pop-in {
+  0% { transform: scale(0.7); opacity: 0; }
+  60% { transform: scale(1.02); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 12px var(--monm-glow); }
+  50% { box-shadow: 0 0 24px var(--monm-glow), 0 0 40px var(--monm-glow); }
+}
+
+@keyframes float-subtle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+
+.animate-ping-ring {
+  animation: ping-ring 0.8s cubic-bezier(0.4, 0, 0.6, 1) forwards;
+}
+
+.animate-msg-pop {
+  animation: msg-pop-in 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 2s ease-in-out infinite;
+}

@@ -30,54 +30,69 @@ export default function ChatsPage() {
     router.replace('/');
   };
 
-  if (loading || !user) return <div className="min-h-screen flex items-center justify-center">Loading…</div>;
+  if (loading || !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-ar-mesh">
+        <div className="text-monm-primary font-medium animate-pulse">Loading…</div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="bg-monm-dark text-white px-4 py-3 flex justify-between items-center">
-        <h1 className="text-xl font-semibold">MonM</h1>
-        <div className="flex items-center gap-2">
-          <span className="text-sm opacity-90">{user.name}</span>
-          <button onClick={handleLogout} className="text-sm px-3 py-1 rounded bg-white/20 hover:bg-white/30">
+    <div className="min-h-screen flex flex-col bg-ar-mesh">
+      <header className="glass-panel-strong px-4 py-3 flex justify-between items-center border-b border-white/5">
+        <h1 className="text-xl font-bold bg-gradient-to-r from-monm-primary to-monm-accent bg-clip-text text-transparent">
+          MonM
+        </h1>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-white/70">{user.name}</span>
+          <button
+            onClick={handleLogout}
+            className="text-sm px-3 py-1.5 rounded-lg glass-panel text-white/90 hover:bg-white/10 border border-white/10 transition"
+          >
             Exit
           </button>
         </div>
       </header>
       <main className="flex-1 overflow-auto">
         {chats.length === 0 ? (
-          <div className="flex flex-col items-center justify-center flex-1 text-gray-500 p-6">
-            <p>No conversations yet.</p>
+          <div className="flex flex-col items-center justify-center flex-1 text-white/50 p-8">
+            <p className="mb-4">No conversations yet.</p>
             <button
               onClick={() => router.push('/chats/new')}
-              className="mt-4 px-6 py-2 bg-monm-primary text-white rounded-lg font-medium"
+              className="px-6 py-3 bg-gradient-to-r from-monm-primary to-emerald-500 text-slate-900 font-bold rounded-xl shadow-glow hover:opacity-90 transition"
             >
               New Chat
             </button>
           </div>
         ) : (
-          <ul className="divide-y divide-gray-200">
-            {chats.map(c => (
+          <ul className="p-3 space-y-2">
+            {chats.map((c, i) => (
               <li
                 key={c.id}
                 onClick={() => router.push(`/chats/${c.id}`)}
-                className="px-4 py-3 flex items-center gap-3 bg-white cursor-pointer hover:bg-gray-50 active:bg-gray-100"
+                className="glass-panel px-4 py-3 flex items-center gap-4 rounded-2xl cursor-pointer hover:bg-white/10 border border-white/5 transition active:scale-[0.99]"
+                style={{ animationDelay: `${i * 50}ms` }}
               >
-                <div className="w-12 h-12 rounded-full bg-monm-dark flex items-center justify-center text-white font-semibold shrink-0">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-monm-primary/30 to-monm-secondary/30 flex items-center justify-center text-monm-primary font-bold text-lg shrink-0 border border-white/10">
                   {(c.participants[0]?.name || '?')[0]}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium truncate">{c.participants.map((p: { name: string }) => p.name).join(', ')}</p>
-                  <p className="text-sm text-gray-500">Tap to open</p>
+                  <p className="font-semibold text-white truncate">
+                    {c.participants.map((p: { name: string }) => p.name).join(', ')}
+                  </p>
+                  <p className="text-xs text-white/40">Tap to open</p>
                 </div>
+                <span className="text-monm-primary">→</span>
               </li>
             ))}
           </ul>
         )}
       </main>
-      <nav className="border-t bg-white px-4 py-2 flex justify-around">
+      <nav className="glass-panel border-t border-white/5 px-4 py-3">
         <button
           onClick={() => router.push('/chats/new')}
-          className="px-4 py-2 text-monm-dark font-medium"
+          className="w-full py-3 rounded-xl font-semibold text-monm-primary border border-monm-primary/40 hover:bg-monm-primary/10 transition"
         >
           + New Chat
         </button>

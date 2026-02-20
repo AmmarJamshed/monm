@@ -100,4 +100,15 @@ db.exec(`
 `);
 
 console.log('Database initialized at', DB_PATH);
+
+// Run migrations
+const cols = db.prepare('PRAGMA table_info(users)').all();
+if (!cols.some(c => c.name === 'username')) {
+  db.exec('ALTER TABLE users ADD COLUMN username TEXT');
+}
+if (!cols.some(c => c.name === 'username_hash')) {
+  db.exec('ALTER TABLE users ADD COLUMN username_hash TEXT');
+  db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username_hash ON users(username_hash) WHERE username_hash IS NOT NULL');
+}
+
 db.close();

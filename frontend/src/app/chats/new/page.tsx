@@ -4,12 +4,18 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { users, conversations } from '@/lib/api';
 
+type UserResult = { id: string; name: string; username?: string | null };
+
 export default function NewChatPage() {
   const router = useRouter();
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<Array<{ id: string; name: string }>>([]);
-  const [selected, setSelected] = useState<Array<{ id: string; name: string }>>([]);
+  const [results, setResults] = useState<UserResult[]>([]);
+  const [selected, setSelected] = useState<UserResult[]>([]);
+  const [contactResults, setContactResults] = useState<UserResult[]>([]);
   const [loading, setLoading] = useState(false);
+  const [contactLoading, setContactLoading] = useState(false);
+  const [contactError, setContactError] = useState('');
+  const [phoneInput, setPhoneInput] = useState('');
 
   const search = async () => {
     if (query.length < 2) return;
@@ -24,11 +30,57 @@ export default function NewChatPage() {
     }
   };
 
-  const add = (u: { id: string; name: string }) => {
+  const add = (u: UserResult) => {
     if (!selected.find(s => s.id === u.id)) setSelected([...selected, u]);
   };
 
   const remove = (id: string) => setSelected(selected.filter(s => s.id !== id));
+
+  const findFromPhones = async (phones: string[]) => {
+    if (phones.length === 0) return;
+    setContactLoading(true);
+    setContactError('');
+    try {
+      const r = await users.findByPhones(phones);
+      setContactResults(r);
+    } catch (e) {
+      setContactError((e as Error).message);
+      setContactResults([]);
+    } finally {
+      setContactLoading(false);
+    }
+  };
+
+  const pickContacts = async () => {
+    if (!('contacts' in navigator) || !('ContactsManager' in window)) {
+      setContactError('Contact picker not supported. Paste numbers below.');
+      return;
+    }
+    try {
+      const props: ('name' | 'email' | 'tel' | 'address' | 'icon')[] = ['tel'];
+      const contacts = await navigator.contacts!.select(props, { multiple: true });
+      const phones = contacts.flatMap(c => c.tel || []).filter(Boolean);
+      await findFromPhones(phones);
+    } catch (e) {
+      if ((e as Error).name !== 'NotFoundError') {
+        setContactError((e as Error).message);
+      }
+      setContactResults([]);
+    }
+  };
+
+  const findFromPastedNumbers = async () => {
+    const phones = phoneInput
+      .split(/[\s,;]+/)
+      .map(p => p.replace(/\D/g, ''))
+      .filter(p => p.length >= 10);
+    if (phones.length === 0) {
+      setContactError('Enter or paste phone numbers (e.g. 5551234567)');
+      return;
+    }
+    await findFromPhones(phones);
+    setPhoneInput('');
+  };
 
   const create = async () => {
     if (selected.length === 0) return;
@@ -43,58 +95,128 @@ export default function NewChatPage() {
     }
   };
 
+  const hasContactPicker = typeof navigator !== 'undefined' && 'contacts' in navigator && 'ContactsManager' in window;
+
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="bg-monm-dark text-white px-4 py-3 flex justify-between items-center">
-        <button onClick={() => router.back()} className="text-white">← Back</button>
-        <h1 className="text-lg font-semibold">New Chat</h1>
-        <div className="w-10" />
+    <div className="min-h-screen flex flex-col bg-ar-mesh">
+      <header className="glass-panel-strong px-4 py-3 flex justify-between items-center border-b border-white/5">
+        <button onClick={() => router.back()} className="text-monm-primary font-semibold">← Back</button>
+        <h1 className="text-lg font-bold text-white">New Chat</h1>
+        <div className="w-14" />
       </header>
-      <main className="flex-1 p-4 space-y-4">
-        <div className="flex gap-2">
-          <input
-            type="text"
-            placeholder="Search by name or phone"
-            value={query}
-            onChange={e => setQuery(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && search()}
-            className="flex-1 px-4 py-3 border rounded-lg"
-          />
-          <button onClick={search} disabled={loading} className="px-4 py-3 bg-monm-primary text-white rounded-lg">
-            Search
-          </button>
+      <main className="flex-1 p-4 space-y-5 overflow-auto">
+        {/* Find from contacts */}
+        <div className="space-y-2">
+          <p className="text-sm text-white/50 font-medium">Find contacts on MonM</p>
+          <div className="flex flex-col gap-2">
+            {hasContactPicker && (
+              <button
+                onClick={pickContacts}
+                disabled={contactLoading}
+                className="w-full py-3 rounded-xl glass-panel border border-monm-primary/40 text-monm-primary font-semibold hover:bg-monm-primary/10 transition disabled:opacity-50"
+              >
+                {contactLoading ? 'Checking…' : 'Pick from phone contacts'}
+              </button>
+            )}
+            <div className="flex gap-2">
+              <input
+                type="text"
+                placeholder="Paste numbers (5551234567, ...)"
+                value={phoneInput}
+                onChange={e => setPhoneInput(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && findFromPastedNumbers()}
+                className="flex-1 px-4 py-3 rounded-xl glass-panel border border-white/10 text-white placeholder-white/40 focus:ring-2 focus:ring-monm-primary outline-none transition"
+              />
+              <button
+                onClick={findFromPastedNumbers}
+                disabled={contactLoading}
+                className="px-5 py-3 bg-monm-secondary/80 text-white font-semibold rounded-xl hover:bg-monm-secondary transition disabled:opacity-50"
+              >
+                Check
+              </button>
+            </div>
+          </div>
+          {contactError && <p className="text-monm-accent text-sm">{contactError}</p>}
+          {contactResults.length > 0 && (
+            <div className="mt-2">
+              <p className="text-xs text-white/40 mb-2">On MonM:</p>
+              <ul className="space-y-2">
+                {contactResults.map(u => (
+                  <li
+                    key={u.id}
+                    onClick={() => add(u)}
+                    className="glass-panel px-4 py-3 rounded-xl border border-monm-primary/30 cursor-pointer hover:bg-monm-primary/10 text-white font-medium transition active:scale-[0.99]"
+                  >
+                    {u.name}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
-        {results.length > 0 && (
-          <div>
-            <p className="text-sm text-gray-600 mb-2">Tap to add:</p>
-            <ul className="space-y-1">
+
+        {/* Search by name or username */}
+        <div className="space-y-2">
+          <p className="text-sm text-white/50 font-medium">Search by name or @username</p>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              placeholder="Name or @username"
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && search()}
+              className="flex-1 px-4 py-3 rounded-xl glass-panel border border-white/10 text-white placeholder-white/40 focus:ring-2 focus:ring-monm-primary outline-none transition"
+            />
+            <button
+              onClick={search}
+              disabled={loading}
+              className="px-5 py-3 bg-gradient-to-r from-monm-primary to-emerald-500 text-slate-900 font-bold rounded-xl shadow-glow disabled:opacity-50 hover:opacity-90 transition"
+            >
+              Search
+            </button>
+          </div>
+          {results.length > 0 && (
+            <ul className="space-y-2 mt-2">
               {results.map(u => (
                 <li
                   key={u.id}
                   onClick={() => add(u)}
-                  className="px-4 py-3 bg-white rounded-lg border cursor-pointer hover:bg-gray-50"
+                  className="glass-panel px-4 py-3 rounded-xl border border-white/10 cursor-pointer hover:bg-white/10 text-white font-medium transition active:scale-[0.99]"
                 >
                   {u.name}
+                  {u.username && <span className="text-white/50 ml-2">@{u.username}</span>}
                 </li>
               ))}
             </ul>
-          </div>
-        )}
+          )}
+        </div>
+
         {selected.length > 0 && (
           <div>
-            <p className="text-sm text-gray-600 mb-2">Selected:</p>
-            <ul className="space-y-1">
+            <p className="text-sm text-white/50 mb-2 font-medium">Selected</p>
+            <ul className="space-y-2">
               {selected.map(u => (
-                <li key={u.id} className="flex justify-between items-center px-4 py-2 bg-monm-light rounded-lg">
-                  <span>{u.name}</span>
-                  <button onClick={() => remove(u.id)} className="text-red-600 text-sm">Remove</button>
+                <li
+                  key={u.id}
+                  className="flex justify-between items-center px-4 py-3 glass-panel rounded-xl border border-monm-primary/30"
+                >
+                  <span className="text-white font-medium">
+                    {u.name}
+                    {u.username && <span className="text-white/50 ml-2">@{u.username}</span>}
+                  </span>
+                  <button
+                    onClick={() => remove(u.id)}
+                    className="text-monm-accent text-sm font-semibold hover:underline"
+                  >
+                    Remove
+                  </button>
                 </li>
               ))}
             </ul>
             <button
               onClick={create}
               disabled={loading}
-              className="mt-4 w-full py-3 bg-monm-primary text-white font-semibold rounded-lg"
+              className="mt-5 w-full py-3 bg-gradient-to-r from-monm-primary to-emerald-500 text-slate-900 font-bold rounded-xl shadow-glow disabled:opacity-50 hover:opacity-90 transition"
             >
               Start Chat
             </button>

@@ -23,16 +23,28 @@ export async function api<T>(path: string, opts: RequestInit = {}): Promise<T> {
   return res.json();
 }
 
+export type User = { id: string; name: string; phone: string | null; username?: string | null };
+
 export const auth = {
-  signup: (name: string, phone: string) =>
-    api<{ token: string; user: { id: string; name: string; phone: string } }>('/api/auth/signup', {
+  signupWithPhone: (name: string, phone: string) =>
+    api<{ token: string; user: User }>('/api/auth/signup', {
       method: 'POST',
       body: JSON.stringify({ name, phone }),
     }),
-  login: (phone: string) =>
-    api<{ token: string; user: { id: string; name: string; phone: string } }>('/api/auth/login', {
+  signupWithUsername: (name: string, username: string) =>
+    api<{ token: string; user: User }>('/api/auth/signup', {
+      method: 'POST',
+      body: JSON.stringify({ name, username: username.trim().toLowerCase() }),
+    }),
+  loginWithPhone: (phone: string) =>
+    api<{ token: string; user: User }>('/api/auth/login', {
       method: 'POST',
       body: JSON.stringify({ phone }),
+    }),
+  loginWithUsername: (username: string) =>
+    api<{ token: string; user: User }>('/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ username: username.trim().toLowerCase() }),
     }),
 };
 
@@ -46,7 +58,13 @@ export const conversations = {
 };
 
 export const users = {
-  search: (q: string) => api<Array<{ id: string; name: string }>>(`/api/users/search?q=${encodeURIComponent(q)}`),
+  search: (q: string) =>
+    api<Array<{ id: string; name: string; username?: string | null }>>(`/api/users/search?q=${encodeURIComponent(q)}`),
+  findByPhones: (phones: string[]) =>
+    api<Array<{ id: string; name: string }>>('/api/users/find-by-phones', {
+      method: 'POST',
+      body: JSON.stringify({ phones }),
+    }),
 };
 
 export const messages = {
