@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --monm-primary: #25D366;
+  --monm-dark: #075E54;
+  --monm-light: #DCF8C6;
+}
+
+body {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+/* Prevent pull-to-refresh on PWA */
+ overscroll-behavior-y: contain;

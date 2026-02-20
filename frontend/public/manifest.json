@@ -1,0 +1,13 @@
+{
+  "name": "MonM",
+  "short_name": "MonM",
+  "description": "Privacy-first secure messaging",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ECE5DD",
+  "theme_color": "#075E54",
+  "orientation": "portrait-primary",
+  "icons": [
+    { "src": "/favicon.ico", "sizes": "48x48", "type": "image/x-icon", "purpose": "any" }
+  ]
+}

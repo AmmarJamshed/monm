@@ -1,0 +1,43 @@
+# Render Blueprint - MonM Backend
+# Connect repo at https://dashboard.render.com
+
+services:
+  - type: web
+    name: monm-api
+    runtime: node
+    region: oregon
+    plan: starter
+
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node src/index.js
+    preDeployCommand: node scripts/init-db.js
+
+    healthCheckPath: /api/health
+
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: PWA_URL
+        sync: false   # Set: https://your-site.netlify.app
+      - key: CORS_ORIGINS
+        sync: false   # Set: https://your-site.netlify.app (comma-separated for multiple)
+      - key: DATA_ROOT
+        value: /data/monm
+      - key: DB_PATH
+        value: /data/monm/db/monm.db
+      - key: LOG_PATH
+        value: /data/monm/logs
+      - key: UPLOAD_PATH
+        value: /data/monm/uploads
+      - key: TMP_PATH
+        value: /data/monm/tmp
+      - key: KEYS_PATH
+        value: /data/monm/keys
+
+    disk:
+      name: monm-data
+      mountPath: /data
+      sizeGB: 1
