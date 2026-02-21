@@ -1,5 +1,6 @@
-# Render Blueprint - MonM Backend (FREE tier for testing)
-# Data in /tmp is reset on restart. Upgrade to paid for persistence.
+# Render Blueprint - MonM Backend
+# FREE TIER: Data is wiped on restart (every ~15 min idle or deploy). Both users must sign up and add each other quickly.
+# PAID TIER: Add a persistent disk at /var/data in Dashboard > Disks to keep users between restarts.
 
 services:
   - type: web

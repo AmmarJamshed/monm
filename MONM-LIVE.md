@@ -8,19 +8,28 @@ Share this link so anyone can use and install MonM.
 
 ---
 
-## Next step: deploy the backend (Render)
+## Deploy backend (Render)
 
-The frontend is deployed. For full functionality (messaging, auth), deploy the backend:
+**One command** (requires [GitHub token](https://github.com/settings/tokens) with `repo` scope):
 
-1. Push MonM to GitHub:
+```powershell
+cd D:\monm
+$env:GITHUB_TOKEN="ghp_YOUR_TOKEN"; .\DEPLOY-BACKEND.ps1
+```
+
+This creates the GitHub repo (if needed), pushes your code, and opens Render. Render auto-deploys when connected to the repo.
+
+### Manual steps if no token
+
+1. Create repo at https://github.com/new named **monm**
+2. Push:
    ```powershell
    cd D:\monm
-   # Create repo at https://github.com/new named "monm"
    git remote add origin https://github.com/YOUR_USERNAME/monm.git
-   git push -u origin main
+   git push -u origin master
    ```
 
-2. Deploy on Render:
+3. Deploy on Render:
    - Go to https://dashboard.render.com
    - **New** → **Blueprint**
    - Connect your **monm** repo
@@ -37,6 +46,22 @@ The frontend is deployed. For full functionality (messaging, auth), deploy the b
    npx netlify-cli env:set NEXT_PUBLIC_WS_URL "wss://monm-api-xxxx.onrender.com"
    npx netlify-cli deploy --prod
    ```
+
+---
+
+## ⚠️ Database on free tier
+
+Render free tier uses **ephemeral storage** — the database is wiped when the service restarts (~15 min idle) or redeploys. Users must sign up again.
+
+**Workaround:** Have both you and dad sign up, then add each other **right away** before any restart.
+
+**For persistence:** Upgrade Render to paid, add a persistent disk at `/var/data`, then set env vars `DATA_ROOT=/var/data/monm` and `DB_PATH=/var/data/monm/db/monm.db`.
+
+---
+
+## Finding contacts (contact picker fails?)
+
+If "Pick from phone contacts" fails, **paste the number** in the box (e.g. `923001234567` or `3001234567`) and tap **Check**. You can also search by name or `@username`.
 
 ---
 

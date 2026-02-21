@@ -66,7 +66,7 @@ export default function NewChatPage() {
       await findFromPhones(phones);
     } catch (e) {
       if ((e as Error).name !== 'NotFoundError') {
-        setContactError((e as Error).message);
+        setContactError("Can't access contacts on this device. Paste his number below (e.g. 923001234567) and tap Check.");
       }
       setContactResults([]);
     }
@@ -78,7 +78,7 @@ export default function NewChatPage() {
       .map(p => p.replace(/\D/g, ''))
       .filter(p => p.length >= 10);
     if (phones.length === 0) {
-      setContactError('Enter or paste phone numbers (e.g. 5551234567)');
+      setContactError('Enter or paste his number (e.g. 923001234567 or 3001234567)');
       return;
     }
     await findFromPhones(phones);
@@ -111,6 +111,11 @@ export default function NewChatPage() {
         {/* Find from contacts */}
         <div className="space-y-2">
           <p className="text-sm text-white/50 font-medium">Find contacts on MonM</p>
+          {contactError && (
+            <p className="text-monm-primary/90 text-sm font-medium px-3 py-2 rounded-lg bg-monm-primary/10 border border-monm-primary/30">
+              {contactError}
+            </p>
+          )}
           <div className="flex flex-col gap-2">
             {hasContactPicker && (
               <button
@@ -123,7 +128,8 @@ export default function NewChatPage() {
             )}
             <div className="flex gap-2">
               <input
-                type="text"
+                type="tel"
+                inputMode="numeric"
                 placeholder="e.g. 923001234567 or 3001234567"
                 value={phoneInput}
                 onChange={e => setPhoneInput(e.target.value)}
@@ -139,7 +145,6 @@ export default function NewChatPage() {
               </button>
             </div>
           </div>
-          {contactError && <p className="text-monm-accent text-sm">{contactError}</p>}
           {!contactLoading && contactSearched && contactResults.length === 0 && !contactError && (
             <p className="text-white/50 text-sm">No contacts on MonM. Ask them to sign up, or search by name / @username.</p>
           )}
