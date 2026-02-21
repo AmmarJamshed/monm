@@ -33,6 +33,14 @@ router.post('/create', (req, res) => {
     const ids = [req.userId, ...(participantIds || [])].filter((v, i, a) => a.indexOf(v) === i);
     if (ids.length < 2) return res.status(400).json({ error: 'Need at least 2 participants' });
     const db = getDb();
+    for (const uid of ids) {
+      const u = db.prepare('SELECT 1 FROM users WHERE id = ?').get(uid);
+      if (!u) {
+        return res.status(400).json({
+          error: 'One or more participants no longer exist. Sign out, sign in again, and try adding them from a fresh search.',
+        });
+      }
+    }
     const id = uuidv4();
     db.prepare('INSERT INTO conversations (id, type) VALUES (?, ?)').run(id, ids.length === 2 ? 'direct' : 'group');
     for (const uid of ids) {
@@ -40,6 +48,11 @@ router.post('/create', (req, res) => {
     }
     res.json({ id, type: ids.length === 2 ? 'direct' : 'group' });
   } catch (e) {
+    if (e.message && e.message.includes('FOREIGN KEY')) {
+      return res.status(400).json({
+        error: 'One or more participants no longer exist. Sign out, sign in again, and try adding them from a fresh search.',
+      });
+    }
     res.status(500).json({ error: e.message });
   }
 });
