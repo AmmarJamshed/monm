@@ -88,9 +88,11 @@ export default function NewChatPage() {
       .map(seg => seg.replace(/\D/g, ''))
       .filter(p => p.length >= 10);
     if (phones.length === 0) {
-      setContactError('Enter or paste his number (e.g. 923001234567 or 3001234567)');
+      setContactError('Enter a valid number (at least 10 digits, e.g. 923001234567)');
+      setContactSearched(false);
       return;
     }
+    setContactError('');
     const found = await findFromPhones(phones);
     if (found.length > 0) setPhoneInput('');
   };
@@ -173,23 +175,40 @@ export default function NewChatPage() {
               </button>
             </div>
           </div>
-          {!contactLoading && contactSearched && contactResults.length === 0 && !contactError && (
-            <p className="text-white/50 text-sm">No one on MonM with this number. They must sign up first (with the same number format, e.g. 92...). Or search by name.</p>
+          {/* Always show phone check result */}
+          {contactLoading && (
+            <div className="mt-2 px-4 py-3 rounded-xl glass-panel border border-white/10">
+              <p className="text-monm-primary font-medium">Checking…</p>
+            </div>
           )}
-          {contactResults.length > 0 && (
-            <div className="mt-2">
-              <p className="text-xs text-white/40 mb-2">On MonM:</p>
-              <ul className="space-y-2">
-                {contactResults.map(u => (
-                  <li
-                    key={u.id}
-                    onClick={() => add(u)}
-                    className="glass-panel px-4 py-3 rounded-xl border border-monm-primary/30 cursor-pointer hover:bg-monm-primary/10 text-white font-medium transition active:scale-[0.99]"
-                  >
-                    {u.name}
-                  </li>
-                ))}
-              </ul>
+          {!contactLoading && contactSearched && (
+            <div className="mt-2 px-4 py-3 rounded-xl glass-panel border border-white/10">
+              {contactError ? (
+                <p className="text-monm-accent font-medium">{contactError}</p>
+              ) : contactResults.length > 0 ? (
+                <>
+                  <p className="text-emerald-400 font-semibold mb-2">✓ User found on MonM</p>
+                  <ul className="space-y-2">
+                    {contactResults.map(u => (
+                      <li
+                        key={u.id}
+                        className="glass-panel px-4 py-3 rounded-xl border border-monm-primary/30 flex items-center justify-between gap-2"
+                      >
+                        <span className="text-white font-medium">{u.name}</span>
+                        <button
+                          onClick={() => startChatWith(u)}
+                          disabled={loading}
+                          className="px-4 py-2 rounded-lg bg-gradient-to-r from-monm-primary to-emerald-500 text-slate-900 font-bold text-sm shadow-glow disabled:opacity-50"
+                        >
+                          Message
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              ) : (
+                <p className="text-amber-400 font-medium">✗ No user found with this number. They must sign up first on MonM.</p>
+              )}
             </div>
           )}
         </div>
