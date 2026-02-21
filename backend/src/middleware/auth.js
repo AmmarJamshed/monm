@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { config } from '../config/index.js';
+import { getDb } from '../db/index.js';
 
 export function authMiddleware(req, res, next) {
   const auth = req.headers.authorization;
@@ -9,6 +10,11 @@ export function authMiddleware(req, res, next) {
   }
   try {
     const decoded = jwt.verify(token, config.jwtSecret);
+    const db = getDb();
+    const user = db.prepare('SELECT 1 FROM users WHERE id = ?').get(decoded.userId);
+    if (!user) {
+      return res.status(401).json({ error: 'Session expired. Please sign in again.' });
+    }
     req.userId = decoded.userId;
     next();
   } catch {

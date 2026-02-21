@@ -27,7 +27,12 @@ export async function api<T>(path: string, opts: RequestInit = {}): Promise<T> {
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error((err as { error?: string }).error || res.statusText);
+    const msg = (err as { error?: string }).error || res.statusText;
+    if (res.status === 401 && typeof window !== 'undefined') {
+      localStorage.removeItem('monm_token');
+      localStorage.removeItem('monm_user');
+    }
+    throw new Error(msg);
   }
   return res.json();
 }
