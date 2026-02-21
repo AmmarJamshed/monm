@@ -21,7 +21,15 @@ router.get('/:conversationId', (req, res) => {
       SELECT id, sender_id, payload_encrypted, iv, auth_tag, created_at
       FROM messages WHERE conversation_id = ? ORDER BY created_at ASC LIMIT 100
     `).all(conversationId);
-    res.json(rows);
+    const out = rows.map(r => ({
+      id: r.id,
+      sender_id: r.sender_id,
+      payload_encrypted: r.payload_encrypted?.toString?.('base64') ?? '',
+      iv: r.iv?.toString?.('base64') ?? '',
+      auth_tag: r.auth_tag?.toString?.('base64') ?? '',
+      created_at: r.created_at,
+    }));
+    res.json(out);
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
