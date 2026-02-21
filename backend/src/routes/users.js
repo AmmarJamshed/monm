@@ -10,13 +10,16 @@ function normPhone(p) {
 // Generate hash variants for lookup (handles +92 300.. vs 0300.. vs 300..)
 const COUNTRY_PREFIXES = ['1', '92', '91', '44']; // US, Pakistan, India, UK
 function phoneHashVariants(p) {
-  const norm = normPhone(p);
-  if (norm.length < 10) return [];
-  const hashes = [sha256(norm)];
-  if (norm.length > 10) hashes.push(sha256(norm.slice(-10)));
-  if (norm.length === 11 && norm[0] === '0') hashes.push(sha256(norm.slice(1)));
-  if (norm.length === 10) {
-    for (const cc of COUNTRY_PREFIXES) hashes.push(sha256(cc + norm));
+  const n = normPhone(p);
+  if (n.length < 10) return [];
+  const hashes = [sha256(n)];
+  if (n.length > 10) hashes.push(sha256(n.slice(-10)));
+  if (n.length === 11 && n[0] === '0') {
+    hashes.push(sha256(n.slice(1)));
+    hashes.push(sha256('92' + n.slice(1)));
+  }
+  if (n.length === 10) {
+    for (const cc of COUNTRY_PREFIXES) hashes.push(sha256(cc + n));
   }
   return [...new Set(hashes)];
 }

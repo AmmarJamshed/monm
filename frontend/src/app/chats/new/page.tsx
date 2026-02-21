@@ -38,17 +38,19 @@ export default function NewChatPage() {
 
   const remove = (id: string) => setSelected(selected.filter(s => s.id !== id));
 
-  const findFromPhones = async (phones: string[]) => {
-    if (phones.length === 0) return;
+  const findFromPhones = async (phones: string[]): Promise<UserResult[]> => {
+    if (phones.length === 0) return [];
     setContactLoading(true);
     setContactError('');
     setContactSearched(true);
     try {
       const r = await users.findByPhones(phones);
       setContactResults(r);
+      return r;
     } catch (e) {
       setContactError((e as Error).message);
       setContactResults([]);
+      return [];
     } finally {
       setContactLoading(false);
     }
@@ -74,15 +76,15 @@ export default function NewChatPage() {
 
   const findFromPastedNumbers = async () => {
     const phones = phoneInput
-      .split(/[\s,;]+/)
-      .map(p => p.replace(/\D/g, ''))
+      .split(/[,;]/)
+      .map(seg => seg.replace(/\D/g, ''))
       .filter(p => p.length >= 10);
     if (phones.length === 0) {
       setContactError('Enter or paste his number (e.g. 923001234567 or 3001234567)');
       return;
     }
-    await findFromPhones(phones);
-    setPhoneInput('');
+    const found = await findFromPhones(phones);
+    if (found.length > 0) setPhoneInput('');
   };
 
   const create = async () => {
@@ -159,7 +161,7 @@ export default function NewChatPage() {
             </div>
           </div>
           {!contactLoading && contactSearched && contactResults.length === 0 && !contactError && (
-            <p className="text-white/50 text-sm">No contacts on MonM. Ask them to sign up, or search by name / @username.</p>
+            <p className="text-white/50 text-sm">No one on MonM with this number. They must sign up first (with the same number format, e.g. 92...). Or search by name.</p>
           )}
           {contactResults.length > 0 && (
             <div className="mt-2">

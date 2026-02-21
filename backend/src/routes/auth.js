@@ -14,6 +14,22 @@ function normPhone(p) {
   return (String(p || '').replace(/\D/g, '')).slice(-15) || '';
 }
 
+const COUNTRY_PREFIXES = ['1', '92', '91', '44'];
+function phoneHashVariants(p) {
+  const n = normPhone(p);
+  if (n.length < 10) return [];
+  const hashes = [sha256(n)];
+  if (n.length > 10) hashes.push(sha256(n.slice(-10)));
+  if (n.length === 11 && n[0] === '0') {
+    hashes.push(sha256(n.slice(1)));
+    hashes.push(sha256('92' + n.slice(1)));
+  }
+  if (n.length === 10) {
+    for (const cc of COUNTRY_PREFIXES) hashes.push(sha256(cc + n));
+  }
+  return [...new Set(hashes)];
+}
+
 router.post('/signup', (req, res) => {
   try {
     const { name, phone, username } = req.body;
@@ -27,9 +43,13 @@ router.post('/signup', (req, res) => {
     if (phone) {
       const phoneNorm = normPhone(phone);
       if (phoneNorm.length < 10) return res.status(400).json({ error: 'Valid phone number required (10+ digits)' });
+      const variants = phoneHashVariants(phone);
+      if (variants.length > 0) {
+        const placeholders = variants.map(() => '?').join(',');
+        const existing = db.prepare(`SELECT 1 FROM users WHERE phone_hash IN (${placeholders})`).get(...variants);
+        if (existing) return res.status(409).json({ error: 'This phone number is already registered. Sign in instead.' });
+      }
       const phoneHash = sha256(phoneNorm);
-      const existing = db.prepare('SELECT 1 FROM users WHERE phone_hash IN (?, ?)').get(phoneHash, sha256(norm(phone)));
-      if (existing) return res.status(409).json({ error: 'Phone already registered' });
       const nameTrim = name.trim();
       db.prepare(`
         INSERT INTO users (id, name, phone, phone_hash) VALUES (?, ?, ?, ?)
