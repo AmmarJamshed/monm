@@ -1,5 +1,14 @@
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
+export async function pingApi(): Promise<boolean> {
+  try {
+    const res = await fetch(`${API}/api/health`);
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
 function getToken(): string | null {
   if (typeof window === 'undefined') return null;
   return localStorage.getItem('monm_token');

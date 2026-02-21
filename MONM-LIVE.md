@@ -75,7 +75,23 @@ If "Pick from phone contacts" fails, **paste the number** in the box (e.g. `9230
 
 ## Redeploy after changes
 
+**Both Netlify and Render auto-deploy on `git push`.** Run:
+
 ```powershell
 cd D:\monm
-npx netlify-cli deploy --prod
+git add -A
+git commit -m "Your changes"
+git push origin master
 ```
+
+Or use the script (no uncommitted changes):
+```powershell
+.\REDEPLOY.ps1
+```
+
+**If search/number check still returns nothing:**
+1. **Verify Netlify env vars** — Site settings → Environment → ensure:
+   - `NEXT_PUBLIC_API_URL` = `https://monm-api.onrender.com` (or your Render URL)
+   - `NEXT_PUBLIC_WS_URL` = `wss://monm-api.onrender.com`
+2. **Trigger a new build** — Deploys → Trigger deploy → Clear cache and deploy
+3. **Database** — Render free tier wipes DB on restart. Both users must sign up again, then add each other immediately.

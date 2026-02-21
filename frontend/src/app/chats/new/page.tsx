@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { users, conversations } from '@/lib/api';
+import { users, conversations, pingApi } from '@/lib/api';
 
 type UserResult = { id: string; name: string; username?: string | null };
 
@@ -17,15 +17,23 @@ export default function NewChatPage() {
   const [contactError, setContactError] = useState('');
   const [phoneInput, setPhoneInput] = useState('');
   const [contactSearched, setContactSearched] = useState(false);
+  const [searchError, setSearchError] = useState('');
+  const [serverReachable, setServerReachable] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    pingApi().then(setServerReachable);
+  }, []);
 
   const search = async () => {
     const q = query.trim().replace(/^@+/, '');
     if (q.length < 1) return;
     setLoading(true);
+    setSearchError('');
     try {
       const r = await users.search(q);
       setResults(r);
-    } catch {
+    } catch (e) {
+      setSearchError((e as Error).message);
       setResults([]);
     } finally {
       setLoading(false);
@@ -123,6 +131,11 @@ export default function NewChatPage() {
         <div className="w-14" />
       </header>
       <main className="flex-1 p-4 space-y-5 overflow-auto">
+        {serverReachable === false && (
+          <p className="text-monm-accent text-sm font-medium px-4 py-3 rounded-xl bg-white/5 border border-monm-accent/40">
+            Can&apos;t reach server. Check that NEXT_PUBLIC_API_URL is set in Netlify and points to your Render backend.
+          </p>
+        )}
         {/* Find from contacts */}
         <div className="space-y-2">
           <p className="text-sm text-white/50 font-medium">Find contacts on MonM</p>
@@ -184,6 +197,11 @@ export default function NewChatPage() {
         {/* Search by name or username */}
         <div className="space-y-2">
           <p className="text-sm text-white/50 font-medium">Search by name, phone, or @username</p>
+          {searchError && (
+            <p className="text-monm-accent text-sm font-medium px-3 py-2 rounded-lg bg-white/5 border border-monm-accent/40">
+              {searchError}
+            </p>
+          )}
           <div className="flex gap-2">
             <input
                 type="text"
