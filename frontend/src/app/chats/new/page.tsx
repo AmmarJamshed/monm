@@ -98,6 +98,19 @@ export default function NewChatPage() {
     }
   };
 
+  const startChatWith = async (u: UserResult) => {
+    add(u);
+    setLoading(true);
+    try {
+      const conv = await conversations.create([u.id]);
+      router.replace(`/chats/${conv.id}`);
+    } catch (e) {
+      alert((e as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const hasContactPicker = typeof navigator !== 'undefined' && 'contacts' in navigator && 'ContactsManager' in window;
 
   return (
@@ -194,11 +207,19 @@ export default function NewChatPage() {
               {results.map(u => (
                 <li
                   key={u.id}
-                  onClick={() => add(u)}
-                  className="glass-panel px-4 py-3 rounded-xl border border-white/10 cursor-pointer hover:bg-white/10 text-white font-medium transition active:scale-[0.99]"
+                  className="glass-panel px-4 py-3 rounded-xl border border-white/10 flex items-center justify-between gap-2"
                 >
-                  {u.name}
-                  {u.username && <span className="text-white/50 ml-2">@{u.username}</span>}
+                  <span className="text-white font-medium">
+                    {u.name}
+                    {u.username && <span className="text-white/50 ml-2">@{u.username}</span>}
+                  </span>
+                  <button
+                    onClick={() => startChatWith(u)}
+                    disabled={loading}
+                    className="px-4 py-2 rounded-lg bg-gradient-to-r from-monm-primary to-emerald-500 text-slate-900 font-bold text-sm shadow-glow disabled:opacity-50"
+                  >
+                    Message
+                  </button>
                 </li>
               ))}
             </ul>
