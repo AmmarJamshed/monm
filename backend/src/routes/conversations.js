@@ -37,7 +37,7 @@ router.post('/create', (req, res) => {
       const u = db.prepare('SELECT 1 FROM users WHERE id = ?').get(uid);
       if (!u) {
         return res.status(400).json({
-          error: 'One or more participants no longer exist. Sign out, sign in again, and try adding them from a fresh search.',
+          error: 'That contact is no longer on MonM (database may have reset). Ask them to sign in again, then search for them again.',
         });
       }
     }
@@ -50,7 +50,7 @@ router.post('/create', (req, res) => {
   } catch (e) {
     if (e.message && e.message.includes('FOREIGN KEY')) {
       return res.status(400).json({
-        error: 'One or more participants no longer exist. Sign out, sign in again, and try adding them from a fresh search.',
+        error: 'That contact is no longer on MonM (database may have reset). Ask them to sign in again, then search for them again.',
       });
     }
     res.status(500).json({ error: e.message });
