@@ -7,13 +7,27 @@ function normPhone(p) {
   return (String(p || '').replace(/\D/g, '')).slice(-15) || '';
 }
 
+// Generate hash variants for lookup (handles +92 300.. vs 0300.. vs 300..)
+const COUNTRY_PREFIXES = ['1', '92', '91', '44']; // US, Pakistan, India, UK
+function phoneHashVariants(p) {
+  const norm = normPhone(p);
+  if (norm.length < 10) return [];
+  const hashes = [sha256(norm)];
+  if (norm.length > 10) hashes.push(sha256(norm.slice(-10)));
+  if (norm.length === 11 && norm[0] === '0') hashes.push(sha256(norm.slice(1)));
+  if (norm.length === 10) {
+    for (const cc of COUNTRY_PREFIXES) hashes.push(sha256(cc + norm));
+  }
+  return [...new Set(hashes)];
+}
+
 const router = Router();
 router.use(authMiddleware);
 
 router.get('/search', (req, res) => {
   try {
-    const q = (req.query.q || '').trim();
-    if (q.length < 2) return res.json([]);
+    const q = (req.query.q || '').trim().replace(/^@+/, '');
+    if (q.length < 1) return res.json([]);
     const db = getDb();
     const like = `%${q}%`;
     const rows = db.prepare(`
@@ -41,10 +55,11 @@ router.post('/find-by-phones', (req, res) => {
       return res.status(400).json({ error: 'Max 200 phones per request' });
     }
     const db = getDb();
-    const hashes = phones
+    const allHashes = phones
       .map(p => normPhone(p))
       .filter(p => p.length >= 10)
-      .map(p => sha256(p));
+      .flatMap(p => phoneHashVariants(p));
+    const hashes = [...new Set(allHashes)];
     if (hashes.length === 0) return res.json([]);
 
     const placeholders = hashes.map(() => '?').join(',');

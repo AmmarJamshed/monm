@@ -16,12 +16,14 @@ export default function NewChatPage() {
   const [contactLoading, setContactLoading] = useState(false);
   const [contactError, setContactError] = useState('');
   const [phoneInput, setPhoneInput] = useState('');
+  const [contactSearched, setContactSearched] = useState(false);
 
   const search = async () => {
-    if (query.length < 2) return;
+    const q = query.trim().replace(/^@+/, '');
+    if (q.length < 1) return;
     setLoading(true);
     try {
-      const r = await users.search(query);
+      const r = await users.search(q);
       setResults(r);
     } catch {
       setResults([]);
@@ -40,6 +42,7 @@ export default function NewChatPage() {
     if (phones.length === 0) return;
     setContactLoading(true);
     setContactError('');
+    setContactSearched(true);
     try {
       const r = await users.findByPhones(phones);
       setContactResults(r);
@@ -121,7 +124,7 @@ export default function NewChatPage() {
             <div className="flex gap-2">
               <input
                 type="text"
-                placeholder="Paste numbers (5551234567, ...)"
+                placeholder="e.g. 923001234567 or 3001234567"
                 value={phoneInput}
                 onChange={e => setPhoneInput(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && findFromPastedNumbers()}
@@ -137,6 +140,9 @@ export default function NewChatPage() {
             </div>
           </div>
           {contactError && <p className="text-monm-accent text-sm">{contactError}</p>}
+          {!contactLoading && contactSearched && contactResults.length === 0 && !contactError && (
+            <p className="text-white/50 text-sm">No contacts on MonM. Ask them to sign up, or search by name / @username.</p>
+          )}
           {contactResults.length > 0 && (
             <div className="mt-2">
               <p className="text-xs text-white/40 mb-2">On MonM:</p>
@@ -157,11 +163,11 @@ export default function NewChatPage() {
 
         {/* Search by name or username */}
         <div className="space-y-2">
-          <p className="text-sm text-white/50 font-medium">Search by name or @username</p>
+          <p className="text-sm text-white/50 font-medium">Search by name, phone, or @username</p>
           <div className="flex gap-2">
             <input
-              type="text"
-              placeholder="Name or @username"
+                type="text"
+                placeholder="e.g. dad, @dad, or 3001234567"
               value={query}
               onChange={e => setQuery(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && search()}
@@ -175,6 +181,9 @@ export default function NewChatPage() {
               Search
             </button>
           </div>
+          {!loading && query.trim().replace(/^@+/, '').length >= 1 && results.length === 0 && (
+            <p className="text-white/50 text-sm mt-2">No one found. Try name, @username, or phone number.</p>
+          )}
           {results.length > 0 && (
             <ul className="space-y-2 mt-2">
               {results.map(u => (
