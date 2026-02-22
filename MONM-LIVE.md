@@ -49,13 +49,9 @@ This creates the GitHub repo (if needed), pushes your code, and opens Render. Re
 
 ---
 
-## ⚠️ Database on free tier
+## ✅ Database persistence (Starter plan)
 
-Render free tier uses **ephemeral storage** — the database is wiped when the service restarts (~15 min idle) or redeploys. Users must sign up again.
-
-**Workaround:** Have both you and dad sign up, then add each other **right away** before any restart.
-
-**For persistence:** Upgrade Render to paid, add a persistent disk at `/var/data`, then set env vars `DATA_ROOT=/var/data/monm` and `DB_PATH=/var/data/monm/db/monm.db`.
+The blueprint uses **Starter plan** with a **persistent disk** at `/var/data`. All data (users, chats, messages, uploads) is stored on disk and **persists across restarts and deploys**. Nothing is erased.
 
 ---
 
@@ -94,4 +90,4 @@ Or use the script (no uncommitted changes):
    - `NEXT_PUBLIC_API_URL` = `https://monm-api.onrender.com` (or your Render URL)
    - `NEXT_PUBLIC_WS_URL` = `wss://monm-api.onrender.com`
 2. **Trigger a new build** — Deploys → Trigger deploy → Clear cache and deploy
-3. **Database** — Render free tier wipes DB on restart. Both users must sign up again, then add each other immediately.
+3. **Database** — With Starter + disk, all data persists. No re-signup needed.

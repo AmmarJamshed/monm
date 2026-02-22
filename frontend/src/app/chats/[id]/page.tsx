@@ -202,9 +202,9 @@ export default function ChatPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-ar-mesh">
-      <header className="glass-panel-strong px-4 py-3 flex items-center gap-3 border-b border-white/5">
-        <button onClick={() => router.back()} className="text-monm-primary text-xl font-bold">←</button>
-        <h1 className="flex-1 font-bold text-white">Chat</h1>
+      <header className="glass-panel-strong px-4 py-3 flex items-center gap-3 border-b border-slate-200">
+        <button onClick={() => router.back()} className="text-monm-primary text-2xl font-bold hover:opacity-80">←</button>
+        <h1 className="flex-1 font-bold bg-gradient-to-r from-monm-primary to-monm-accent bg-clip-text text-transparent">Chat</h1>
       </header>
       <main className="flex-1 overflow-auto p-4 space-y-3">
         {msgs.map(m => (
@@ -221,7 +221,7 @@ export default function ChatPage() {
         ))}
         <div ref={bottomRef} />
       </main>
-      <footer className="glass-panel-strong p-4 border-t border-white/5 flex flex-col gap-2">
+      <footer className="glass-panel-strong p-4 border-t border-slate-200 flex flex-col gap-2">
         <div className="flex gap-2 items-center">
           <input
             type="file"
@@ -235,7 +235,7 @@ export default function ChatPage() {
             type="button"
             onClick={() => cameraInputRef.current?.click()}
             disabled={sending}
-            className="p-3 rounded-xl glass-panel border border-white/10 text-white/80 hover:bg-white/10 transition disabled:opacity-50"
+            className="p-3 rounded-xl glass-panel border border-slate-200 text-slate-700 hover:bg-monm-primary/15 hover:border-monm-primary/40 transition-all disabled:opacity-50"
             title="Take photo or choose image"
             aria-label="Photo"
           >
@@ -252,7 +252,7 @@ export default function ChatPage() {
             type="button"
             onClick={() => document.getElementById('gallery-picker')?.click()}
             disabled={sending}
-            className="p-3 rounded-xl glass-panel border border-white/10 text-white/80 hover:bg-white/10 transition disabled:opacity-50"
+            className="p-3 rounded-xl glass-panel border border-slate-200 text-slate-700 hover:bg-monm-primary/15 hover:border-monm-primary/40 transition-all disabled:opacity-50"
             title="Choose from gallery"
             aria-label="Gallery"
           >
@@ -269,7 +269,7 @@ export default function ChatPage() {
             type="button"
             onClick={() => document.getElementById('file-picker')?.click()}
             disabled={sending}
-            className="p-3 rounded-xl glass-panel border border-white/10 text-white/80 hover:bg-white/10 transition disabled:opacity-50"
+            className="p-3 rounded-xl glass-panel border border-slate-200 text-slate-700 hover:bg-monm-primary/15 hover:border-monm-primary/40 transition-all disabled:opacity-50"
             title="Attach file"
             aria-label="File"
           >
@@ -281,12 +281,12 @@ export default function ChatPage() {
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && !e.shiftKey && send()}
-            className="flex-1 px-5 py-3 rounded-2xl bg-white/5 border border-white/10 text-white placeholder-white/40 focus:ring-2 focus:ring-monm-primary focus:border-transparent outline-none transition"
+            className="flex-1 px-5 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-monm-primary focus:border-monm-primary/50 outline-none transition"
           />
           <button
             onClick={send}
             disabled={sending || !input.trim()}
-            className="px-6 py-3 bg-gradient-to-r from-monm-primary to-emerald-500 text-slate-900 font-bold rounded-2xl disabled:opacity-50 shadow-glow hover:opacity-90 transition disabled:hover:opacity-50"
+            className="px-6 py-3 bg-gradient-to-r from-monm-primary via-emerald-400 to-cyan-400 text-slate-900 font-bold rounded-2xl disabled:opacity-50 shadow-glow hover:scale-105 transition-all"
           >
             Send
           </button>

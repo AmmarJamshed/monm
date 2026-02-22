@@ -6,13 +6,15 @@ const config: Config = {
     extend: {
       colors: {
         monm: {
-          primary: '#00D4AA',
-          secondary: '#7C3AED',
+          primary: '#00C9B7',
+          secondary: '#8B5CF6',
           accent: '#F472B6',
-          dark: '#0F172A',
-          bg: '#0C0A14',
-          'glass': 'rgba(255,255,255,0.06)',
-          'glass-border': 'rgba(255,255,255,0.12)',
+          gold: '#FBBF24',
+          sky: '#38BDF8',
+          dark: '#1F2937',
+          bg: '#FAF8FC',
+          'glass': 'rgba(255,255,255,0.85)',
+          'glass-border': 'rgba(203,213,225,0.5)',
         },
       },
       fontFamily: {
@@ -39,8 +41,9 @@ const config: Config = {
         },
       },
       boxShadow: {
-        'glow': '0 0 20px rgba(0, 212, 170, 0.3)',
-        'glow-pink': '0 0 20px rgba(244, 114, 182, 0.25)',
+        'glow': '0 0 24px rgba(0, 201, 183, 0.35), 0 0 48px rgba(0, 201, 183, 0.15)',
+        'glow-pink': '0 0 24px rgba(244, 114, 182, 0.3)',
+        'glow-purple': '0 0 24px rgba(139, 92, 246, 0.25)',
       },
     },
   },

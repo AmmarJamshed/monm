@@ -35,11 +35,11 @@ export default function MessageBubble({ text, isMe, label, time, isNew = false, 
         <div
           className={`px-4 py-2.5 rounded-2xl ${
             isMe
-              ? 'bg-gradient-to-br from-monm-primary to-emerald-500 text-slate-900 shadow-glow'
-              : 'glass-panel-strong text-white border border-white/10 shadow-glow-pink'
+              ? 'bg-gradient-to-br from-monm-primary via-emerald-400 to-cyan-400 text-slate-900 font-medium shadow-glow'
+              : 'glass-panel-strong text-slate-800 border border-monm-secondary/25 bg-gradient-to-br from-violet-50 to-pink-50 shadow-glow-purple'
           }`}
         >
-          <p className="text-xs opacity-80 mb-1">
+          <p className={`text-xs mb-1 ${isMe ? 'opacity-90' : 'text-slate-500'}`}>
             {label} · {time}
           </p>
           {mediaType === 'image' && text ? (

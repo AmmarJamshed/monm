@@ -1,19 +1,23 @@
 # Render Blueprint - MonM Backend
-# FREE TIER: Data is wiped on restart (every ~15 min idle or deploy). Both users must sign up and add each other quickly.
-# PAID TIER: Add a persistent disk at /var/data in Dashboard > Disks to keep users between restarts.
+# STARTER PLAN + PERSISTENT DISK: All data (users, chats, messages, uploads) is stored on disk and preserved across restarts and deploys.
 
 services:
   - type: web
     name: monm-api
     runtime: node
     region: oregon
-    plan: free
+    plan: starter
 
     rootDir: backend
     buildCommand: npm install
     startCommand: node scripts/init-db.js && node src/index.js
 
     healthCheckPath: /api/health
+
+    disk:
+      name: monm-data
+      mountPath: /var/data
+      sizeGB: 1
 
     envVars:
       - key: NODE_ENV
@@ -25,6 +29,6 @@ services:
       - key: CORS_ORIGINS
         value: https://monm-secure-messaging.netlify.app
       - key: DATA_ROOT
-        value: /tmp/monm
+        value: /var/data/monm
       - key: DB_PATH
-        value: /tmp/monm/db/monm.db
+        value: /var/data/monm/db/monm.db

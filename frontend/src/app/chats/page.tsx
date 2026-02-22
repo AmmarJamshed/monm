@@ -40,15 +40,15 @@ export default function ChatsPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-ar-mesh">
-      <header className="glass-panel-strong px-4 py-3 flex justify-between items-center border-b border-white/5">
-        <h1 className="text-xl font-bold bg-gradient-to-r from-monm-primary to-monm-accent bg-clip-text text-transparent">
+      <header className="glass-panel-strong px-4 py-3 flex justify-between items-center border-b border-slate-200">
+        <h1 className="text-2xl font-bold bg-gradient-to-r from-monm-primary via-monm-accent to-monm-secondary bg-clip-text text-transparent">
           MonM
         </h1>
         <div className="flex items-center gap-3">
-          <span className="text-sm text-white/70">{user.name}</span>
+          <span className="text-sm text-slate-600 font-medium">{user.name}</span>
           <button
             onClick={handleLogout}
-            className="text-sm px-3 py-1.5 rounded-lg glass-panel text-white/90 hover:bg-white/10 border border-white/10 transition"
+            className="text-sm px-4 py-2 rounded-xl glass-panel text-slate-700 hover:bg-monm-accent/20 border border-slate-200 hover:border-monm-accent/40 transition-all"
           >
             Exit
           </button>
@@ -56,13 +56,14 @@ export default function ChatsPage() {
       </header>
       <main className="flex-1 overflow-auto">
         {chats.length === 0 ? (
-          <div className="flex flex-col items-center justify-center flex-1 text-white/50 p-8">
-            <p className="mb-4">No conversations yet.</p>
+          <div className="flex flex-col items-center justify-center flex-1 text-slate-600 p-8">
+            <p className="mb-6 text-lg text-slate-800">No conversations yet.</p>
+            <p className="mb-6 text-slate-500 text-sm">Start a chat with someone special 💬</p>
             <button
               onClick={() => router.push('/chats/new')}
-              className="px-6 py-3 bg-gradient-to-r from-monm-primary to-emerald-500 text-slate-900 font-bold rounded-xl shadow-glow hover:opacity-90 transition"
+              className="px-8 py-4 bg-gradient-to-r from-monm-primary via-emerald-400 to-cyan-400 text-slate-900 font-bold rounded-2xl shadow-glow hover:scale-105 hover:opacity-95 transition-all"
             >
-              New Chat
+              + New Chat
             </button>
           </div>
         ) : (
@@ -71,28 +72,28 @@ export default function ChatsPage() {
               <li
                 key={c.id}
                 onClick={() => router.push(`/chats/${c.id}`)}
-                className="glass-panel px-4 py-3 flex items-center gap-4 rounded-2xl cursor-pointer hover:bg-white/10 border border-white/5 transition active:scale-[0.99]"
+                className="glass-panel px-4 py-3 flex items-center gap-4 rounded-2xl cursor-pointer hover:bg-slate-50 hover:border-monm-primary/30 border border-slate-200 transition-all active:scale-[0.99]"
                 style={{ animationDelay: `${i * 50}ms` }}
               >
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-monm-primary/30 to-monm-secondary/30 flex items-center justify-center text-monm-primary font-bold text-lg shrink-0 border border-white/10">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-monm-primary/50 via-monm-secondary/50 to-monm-accent/50 flex items-center justify-center text-white font-bold text-lg shrink-0 border border-slate-200 shadow-glow">
                   {(c.participants[0]?.name || '?')[0]}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-white truncate">
+                  <p className="font-semibold text-slate-800 truncate">
                     {c.participants.map((p: { name: string }) => p.name).join(', ')}
                   </p>
-                  <p className="text-xs text-white/40">Tap to open</p>
+                  <p className="text-xs text-slate-500">Tap to open</p>
                 </div>
-                <span className="text-monm-primary">→</span>
+                <span className="text-monm-primary text-xl">→</span>
               </li>
             ))}
           </ul>
         )}
       </main>
-      <nav className="glass-panel border-t border-white/5 px-4 py-3">
+      <nav className="glass-panel border-t border-slate-200 px-4 py-3">
         <button
           onClick={() => router.push('/chats/new')}
-          className="w-full py-3 rounded-xl font-semibold text-monm-primary border border-monm-primary/40 hover:bg-monm-primary/10 transition"
+          className="w-full py-3.5 rounded-xl font-bold text-monm-primary border-2 border-monm-primary/50 hover:bg-monm-primary/15 hover:shadow-glow transition-all"
         >
           + New Chat
         </button>

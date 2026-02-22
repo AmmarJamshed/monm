@@ -127,20 +127,20 @@ export default function NewChatPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-ar-mesh">
-      <header className="glass-panel-strong px-4 py-3 flex justify-between items-center border-b border-white/5">
-        <button onClick={() => router.back()} className="text-monm-primary font-semibold">← Back</button>
-        <h1 className="text-lg font-bold text-white">New Chat</h1>
+      <header className="glass-panel-strong px-4 py-3 flex justify-between items-center border-b border-slate-200">
+        <button onClick={() => router.back()} className="text-monm-primary font-bold hover:opacity-80">← Back</button>
+        <h1 className="text-xl font-bold bg-gradient-to-r from-monm-primary to-monm-accent bg-clip-text text-transparent">New Chat</h1>
         <div className="w-14" />
       </header>
       <main className="flex-1 p-4 space-y-5 overflow-auto">
         {serverReachable === false && (
-          <p className="text-monm-accent text-sm font-medium px-4 py-3 rounded-xl bg-white/5 border border-monm-accent/40">
+          <p className="text-monm-accent text-sm font-medium px-4 py-3 rounded-xl bg-rose-50 border border-monm-accent/40">
             Can&apos;t reach server. Check that NEXT_PUBLIC_API_URL is set in Netlify and points to your Render backend.
           </p>
         )}
         {/* Find from contacts */}
         <div className="space-y-2">
-          <p className="text-sm text-white/50 font-medium">Find contacts on MonM</p>
+          <p className="text-sm text-slate-600 font-medium">Find contacts on MonM</p>
           {contactError && (
             <p className="text-monm-primary/90 text-sm font-medium px-3 py-2 rounded-lg bg-monm-primary/10 border border-monm-primary/30">
               {contactError}
@@ -151,7 +151,7 @@ export default function NewChatPage() {
               <button
                 onClick={pickContacts}
                 disabled={contactLoading}
-                className="w-full py-3 rounded-xl glass-panel border border-monm-primary/40 text-monm-primary font-semibold hover:bg-monm-primary/10 transition disabled:opacity-50"
+                className="w-full py-3 rounded-xl glass-panel border-2 border-monm-primary/50 text-monm-primary font-bold hover:bg-monm-primary/15 hover:shadow-glow transition-all disabled:opacity-50"
               >
                 {contactLoading ? 'Checking…' : 'Pick from phone contacts'}
               </button>
@@ -164,12 +164,12 @@ export default function NewChatPage() {
                 value={phoneInput}
                 onChange={e => setPhoneInput(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && findFromPastedNumbers()}
-                className="flex-1 px-4 py-3 rounded-xl glass-panel border border-white/10 text-white placeholder-white/40 focus:ring-2 focus:ring-monm-primary outline-none transition"
+                className="flex-1 px-4 py-3 rounded-xl glass-panel border border-slate-200 bg-slate-50 text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-monm-primary focus:border-monm-primary/50 outline-none transition"
               />
               <button
                 onClick={findFromPastedNumbers}
                 disabled={contactLoading}
-                className="px-5 py-3 bg-monm-secondary/80 text-white font-semibold rounded-xl hover:bg-monm-secondary transition disabled:opacity-50"
+                className="px-5 py-3 bg-gradient-to-r from-monm-secondary to-monm-accent text-white font-bold rounded-xl hover:opacity-90 transition disabled:opacity-50"
               >
                 Check
               </button>
@@ -177,12 +177,12 @@ export default function NewChatPage() {
           </div>
           {/* Always show phone check result */}
           {contactLoading && (
-            <div className="mt-2 px-4 py-3 rounded-xl glass-panel border border-white/10">
+            <div className="mt-2 px-4 py-3 rounded-xl glass-panel border border-slate-200">
               <p className="text-monm-primary font-medium">Checking…</p>
             </div>
           )}
           {!contactLoading && contactSearched && (
-            <div className="mt-2 px-4 py-3 rounded-xl glass-panel border border-white/10">
+            <div className="mt-2 px-4 py-3 rounded-xl glass-panel border border-slate-200">
               {contactError ? (
                 <p className="text-monm-accent font-medium">{contactError}</p>
               ) : contactResults.length > 0 ? (
@@ -194,11 +194,11 @@ export default function NewChatPage() {
                         key={u.id}
                         className="glass-panel px-4 py-3 rounded-xl border border-monm-primary/30 flex items-center justify-between gap-2"
                       >
-                        <span className="text-white font-medium">{u.name}</span>
+                        <span className="text-slate-800 font-medium">{u.name}</span>
                         <button
                           onClick={() => startChatWith(u)}
                           disabled={loading}
-                          className="px-4 py-2 rounded-lg bg-gradient-to-r from-monm-primary to-emerald-500 text-slate-900 font-bold text-sm shadow-glow disabled:opacity-50"
+                          className="px-4 py-2 rounded-lg bg-gradient-to-r from-monm-primary via-emerald-400 to-cyan-400 text-slate-900 font-bold text-sm shadow-glow hover:scale-105 transition-all disabled:opacity-50"
                         >
                           Message
                         </button>
@@ -215,9 +215,9 @@ export default function NewChatPage() {
 
         {/* Search by name or username */}
         <div className="space-y-2">
-          <p className="text-sm text-white/50 font-medium">Search by name, phone, or @username</p>
+            <p className="text-sm text-slate-600 font-medium">Search by name, phone, or @username</p>
           {searchError && (
-            <p className="text-monm-accent text-sm font-medium px-3 py-2 rounded-lg bg-white/5 border border-monm-accent/40">
+            <p className="text-monm-accent text-sm font-medium px-3 py-2 rounded-lg bg-rose-50 border border-monm-accent/40">
               {searchError}
             </p>
           )}
@@ -228,34 +228,34 @@ export default function NewChatPage() {
               value={query}
               onChange={e => setQuery(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && search()}
-              className="flex-1 px-4 py-3 rounded-xl glass-panel border border-white/10 text-white placeholder-white/40 focus:ring-2 focus:ring-monm-primary outline-none transition"
+              className="flex-1 px-4 py-3 rounded-xl glass-panel border border-slate-200 bg-slate-50 text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-monm-primary focus:border-monm-primary/50 outline-none transition"
             />
             <button
               onClick={search}
               disabled={loading}
-              className="px-5 py-3 bg-gradient-to-r from-monm-primary to-emerald-500 text-slate-900 font-bold rounded-xl shadow-glow disabled:opacity-50 hover:opacity-90 transition"
+                className="px-5 py-3 bg-gradient-to-r from-monm-primary via-emerald-400 to-cyan-400 text-slate-900 font-bold rounded-xl shadow-glow disabled:opacity-50 hover:scale-105 transition-all"
             >
               Search
             </button>
           </div>
           {!loading && query.trim().replace(/^@+/, '').length >= 1 && results.length === 0 && (
-            <p className="text-white/50 text-sm mt-2">No one found. Try name, @username, or phone number.</p>
+            <p className="text-slate-500 text-sm mt-2">No one found. Try name, @username, or phone number.</p>
           )}
           {results.length > 0 && (
             <ul className="space-y-2 mt-2">
               {results.map(u => (
                 <li
                   key={u.id}
-                  className="glass-panel px-4 py-3 rounded-xl border border-white/10 flex items-center justify-between gap-2"
+                  className="glass-panel px-4 py-3 rounded-xl border border-slate-200 flex items-center justify-between gap-2"
                 >
-                  <span className="text-white font-medium">
+                  <span className="text-slate-800 font-medium">
                     {u.name}
-                    {u.username && <span className="text-white/50 ml-2">@{u.username}</span>}
+                    {u.username && <span className="text-slate-500 ml-2">@{u.username}</span>}
                   </span>
                   <button
                     onClick={() => startChatWith(u)}
                     disabled={loading}
-                    className="px-4 py-2 rounded-lg bg-gradient-to-r from-monm-primary to-emerald-500 text-slate-900 font-bold text-sm shadow-glow disabled:opacity-50"
+                    className="px-4 py-2 rounded-lg bg-gradient-to-r from-monm-primary via-emerald-400 to-cyan-400 text-slate-900 font-bold text-sm shadow-glow hover:scale-105 transition-all disabled:opacity-50"
                   >
                     Message
                   </button>
@@ -267,16 +267,16 @@ export default function NewChatPage() {
 
         {selected.length > 0 && (
           <div>
-            <p className="text-sm text-white/50 mb-2 font-medium">Selected</p>
+            <p className="text-sm text-slate-500 mb-2 font-medium">Selected</p>
             <ul className="space-y-2">
               {selected.map(u => (
                 <li
                   key={u.id}
                   className="flex justify-between items-center px-4 py-3 glass-panel rounded-xl border border-monm-primary/30"
                 >
-                  <span className="text-white font-medium">
+                  <span className="text-slate-800 font-medium">
                     {u.name}
-                    {u.username && <span className="text-white/50 ml-2">@{u.username}</span>}
+                    {u.username && <span className="text-slate-500 ml-2">@{u.username}</span>}
                   </span>
                   <button
                     onClick={() => remove(u.id)}
@@ -290,7 +290,7 @@ export default function NewChatPage() {
             <button
               onClick={create}
               disabled={loading}
-              className="mt-5 w-full py-3 bg-gradient-to-r from-monm-primary to-emerald-500 text-slate-900 font-bold rounded-xl shadow-glow disabled:opacity-50 hover:opacity-90 transition"
+              className="mt-5 w-full py-3.5 bg-gradient-to-r from-monm-primary via-emerald-400 to-cyan-400 text-slate-900 font-bold rounded-xl shadow-glow disabled:opacity-50 hover:scale-[1.02] transition-all"
             >
               Start Chat
             </button>

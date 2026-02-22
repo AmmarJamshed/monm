@@ -3,15 +3,18 @@
 @tailwind utilities;
 
 :root {
-  --monm-primary: #00D4AA;
-  --monm-secondary: #7C3AED;
+  --monm-primary: #00C9B7;
+  --monm-secondary: #8B5CF6;
   --monm-accent: #F472B6;
-  --monm-dark: #0F172A;
-  --monm-bg: #0C0A14;
-  --monm-glass: rgba(255, 255, 255, 0.06);
-  --monm-glass-border: rgba(255, 255, 255, 0.12);
-  --monm-glow: rgba(0, 212, 170, 0.4);
-  --monm-glow-pink: rgba(244, 114, 182, 0.3);
+  --monm-gold: #FBBF24;
+  --monm-sky: #38BDF8;
+  --monm-dark: #1F2937;
+  --monm-bg: #FAF8FC;
+  --monm-glass: rgba(255, 255, 255, 0.85);
+  --monm-glass-border: rgba(203, 213, 225, 0.5);
+  --monm-glow: rgba(0, 201, 183, 0.35);
+  --monm-glow-pink: rgba(244, 114, 182, 0.35);
+  --monm-glow-purple: rgba(139, 92, 246, 0.3);
 }
 
 body {
@@ -21,27 +24,32 @@ body {
 
 html { overscroll-behavior-y: contain; }
 
-/* AR-style gradient mesh background */
+/* Light, cheerful gradient background - warm and inviting */
 .bg-ar-mesh {
-  background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(124, 58, 237, 0.25), transparent),
-    radial-gradient(ellipse 60% 40% at 100% 50%, rgba(0, 212, 170, 0.15), transparent),
-    radial-gradient(ellipse 50% 30% at 0% 80%, rgba(244, 114, 182, 0.12), transparent),
-    #0C0A14;
+  background:
+    radial-gradient(ellipse 90% 60% at 20% 15%, rgba(139, 92, 246, 0.12), transparent 50%),
+    radial-gradient(ellipse 85% 55% at 85% 10%, rgba(0, 201, 183, 0.15), transparent 50%),
+    radial-gradient(ellipse 70% 50% at 50% 90%, rgba(244, 114, 182, 0.1), transparent 50%),
+    radial-gradient(ellipse 60% 45% at 5% 70%, rgba(251, 191, 36, 0.08), transparent 50%),
+    linear-gradient(180deg, #FAF8FC 0%, #F5F3FF 40%, #FAF8FC 100%);
+  min-height: 100vh;
 }
 
-/* Glassmorphism panel */
+/* Light frosted glass panels */
 .glass-panel {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(203, 213, 225, 0.4);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
 }
 
 .glass-panel-strong {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(203, 213, 225, 0.5);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
 }
 
 /* Ping / radar ring animation */

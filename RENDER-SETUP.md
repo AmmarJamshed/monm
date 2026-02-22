@@ -26,6 +26,8 @@ Then: Netlify → Deploys → **Trigger deploy** → **Deploy site**
 
 ---
 
-## Plan Note
+## Plan & Data Persistence
 
-The blueprint uses **Starter** plan + disk for SQLite persistence. Free tier has no disk; data would be lost on restart. For production, use Starter ($7/mo).
+The blueprint uses **Starter** plan ($7/mo) with a **persistent disk** (1 GB) mounted at `/var/data`. All data—users, conversations, messages, media uploads—is stored on this disk and **persists across restarts and deploys**. Nothing is erased from the database.
+
+**If you already have a service on Free tier:** Upgrade to Starter in the Render Dashboard, then sync/redeploy with the updated blueprint. The disk will be created and `DATA_ROOT` / `DB_PATH` will point to the persistent path. Existing data in `/tmp` will not carry over; users will need to sign up again once, and all new data will then persist.
