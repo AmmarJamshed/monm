@@ -10,6 +10,7 @@ import authRoutes from './routes/auth.js';
 import conversationRoutes from './routes/conversations.js';
 import userRoutes from './routes/users.js';
 import messageRoutes from './routes/messages.js';
+import mediaRoutes from './routes/media.js';
 import debugRoutes from './routes/debug.js';
 import { initWebSocket, broadcastNewMessage } from './websocket/index.js';
 
@@ -32,6 +33,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/conversations', conversationRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/messages', messageRoutes);
+app.use('/api/media', mediaRoutes);
 app.use('/api/debug', debugRoutes);
 
 app.get('/api/health', (_, res) => res.json({ ok: true, ts: new Date().toISOString() }));

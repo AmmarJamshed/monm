@@ -18,8 +18,11 @@ router.get('/:conversationId', (req, res) => {
     ).get(conversationId, req.userId);
     if (!participant) return res.status(403).json({ error: 'Not in conversation' });
     const rows = db.prepare(`
-      SELECT id, sender_id, payload_encrypted, iv, auth_tag, created_at
-      FROM messages WHERE conversation_id = ? ORDER BY created_at ASC LIMIT 100
+      SELECT m.id, m.sender_id, m.payload_encrypted, m.iv, m.auth_tag, m.created_at,
+             med.id as media_id, med.fingerprint_hash, med.kill_switch_active
+      FROM messages m
+      LEFT JOIN media med ON med.message_id = m.id
+      WHERE m.conversation_id = ? ORDER BY m.created_at ASC LIMIT 100
     `).all(conversationId);
     const out = rows.map(r => ({
       id: r.id,
@@ -28,6 +31,9 @@ router.get('/:conversationId', (req, res) => {
       iv: r.iv?.toString?.('base64') ?? '',
       auth_tag: r.auth_tag?.toString?.('base64') ?? '',
       created_at: r.created_at,
+      media_id: r.media_id ?? null,
+      fingerprint_hash: r.fingerprint_hash ?? null,
+      kill_switch_active: r.kill_switch_active === 1,
     }));
     res.json(out);
   } catch (e) {
@@ -37,7 +43,7 @@ router.get('/:conversationId', (req, res) => {
 
 router.post('/send', async (req, res) => {
   try {
-    const { conversationId, payloadEncrypted, iv, authTag } = req.body;
+    const { conversationId, payloadEncrypted, iv, authTag, fingerprintHash, mediaType, mimeType } = req.body;
     if (!conversationId || !payloadEncrypted || !iv || !authTag) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
@@ -59,6 +65,15 @@ router.post('/send', async (req, res) => {
       Buffer.from(authTag, 'base64'),
       txHash
     );
+    let mediaId = null;
+    if (fingerprintHash && (mediaType === 'image' || mediaType === 'file')) {
+      mediaId = uuidv4();
+      const fpTx = await blockchain.registerFingerprint(fingerprintHash, '');
+      db.prepare(`
+        INSERT INTO media (id, message_id, owner_id, fingerprint_hash, mime_type, blockchain_tx)
+        VALUES (?, ?, ?, ?, ?, ?)
+      `).run(mediaId, id, req.userId, fingerprintHash, mimeType || (mediaType === 'image' ? 'image/jpeg' : 'application/octet-stream'), fpTx);
+    }
     const row = db.prepare(
       'SELECT id, sender_id, payload_encrypted, iv, auth_tag, created_at FROM messages WHERE id = ?'
     ).get(id);
@@ -68,6 +83,7 @@ router.post('/send', async (req, res) => {
       payload_encrypted: row.payload_encrypted?.toString('base64'),
       iv: row.iv?.toString('base64'),
       auth_tag: row.auth_tag?.toString('base64'),
+      media_id: mediaId,
     };
     broadcastNewMessage(conversationId, msg, req.userId);
     res.json(msg);

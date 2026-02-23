@@ -2,8 +2,8 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { messages as msgApi, conversations } from '@/lib/api';
-import { encrypt, decrypt, deriveConversationKey } from '@/lib/crypto';
+import { messages as msgApi, conversations, media as mediaApi } from '@/lib/api';
+import { encrypt, decrypt, deriveConversationKey, sha256Hash } from '@/lib/crypto';
 import { createWS } from '@/lib/ws';
 import MessageBubble from '@/components/MessageBubble';
 
@@ -17,6 +17,9 @@ type Message = {
   decrypted?: string;
   mediaType?: 'image' | 'file';
   mime?: string;
+  media_id?: string | null;
+  fingerprint_hash?: string | null;
+  kill_switch_active?: boolean;
 };
 
 export default function ChatPage() {
@@ -30,6 +33,7 @@ export default function ChatPage() {
   const [newMsgIds, setNewMsgIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [convList, setConvList] = useState<Array<{ id: string; type: string; participants: { id: string; name: string }[] }>>([]);
   const wsRef = useRef<WebSocket | null>(null);
   const convKeyRef = useRef<CryptoKey | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -49,8 +53,9 @@ export default function ChatPage() {
 
     async function load() {
       try {
-        const [list, convList] = await Promise.all([msgApi.list(id), conversations.list()]);
-        const conv = convList.find(c => c.id === id);
+        const [list, convs] = await Promise.all([msgApi.list(id), conversations.list()]);
+        setConvList(convs);
+        const conv = convs.find(c => c.id === id);
         const participantIds = conv?.participants
           ? Array.from(new Set([...conv.participants.map((p: { id: string }) => p.id), user.id]))
           : [user.id];
@@ -68,10 +73,10 @@ export default function ChatPage() {
                 return { ...m, decrypted: raw, mediaType: undefined };
               }
               if (parsed.t === 'image' && parsed.d) {
-                return { ...m, decrypted: parsed.d, mediaType: 'image' as const, mime: parsed.m || 'image/jpeg' };
+                return { ...m, decrypted: parsed.d, mediaType: 'image' as const, mime: parsed.m || 'image/jpeg', media_id: m.media_id, fingerprint_hash: m.fingerprint_hash, kill_switch_active: m.kill_switch_active };
               }
               if (parsed.t === 'file' && parsed.d) {
-                return { ...m, decrypted: parsed.d, mediaType: 'file' as const, mime: parsed.m };
+                return { ...m, decrypted: parsed.d, mediaType: 'file' as const, mime: parsed.m, media_id: m.media_id, fingerprint_hash: m.fingerprint_hash, kill_switch_active: m.kill_switch_active };
               }
               return { ...m, decrypted: parsed.d ?? raw, mediaType: undefined };
             } catch {
@@ -108,9 +113,9 @@ export default function ChatPage() {
             return;
           }
           const msg = parsed.t === 'image' && parsed.d
-            ? { ...m, decrypted: parsed.d, mediaType: 'image' as const, mime: parsed.m || 'image/jpeg' }
+            ? { ...m, decrypted: parsed.d, mediaType: 'image' as const, mime: parsed.m || 'image/jpeg', media_id: m.media_id, fingerprint_hash: m.fingerprint_hash, kill_switch_active: m.kill_switch_active }
             : parsed.t === 'file' && parsed.d
-              ? { ...m, decrypted: parsed.d, mediaType: 'file' as const, mime: parsed.m }
+              ? { ...m, decrypted: parsed.d, mediaType: 'file' as const, mime: parsed.m, media_id: m.media_id, fingerprint_hash: m.fingerprint_hash, kill_switch_active: m.kill_switch_active }
               : { ...m, decrypted: parsed.d ?? raw };
           setMsgs(prev => {
             setNewMsgIds(prevIds => new Set(Array.from(prevIds).concat(m.id)));
@@ -179,16 +184,56 @@ export default function ChatPage() {
           r.readAsDataURL(file);
         });
       }
-      const payload = JSON.stringify({ t: file.type.startsWith('image/') ? 'image' : 'file', d: base64, m: file.type });
+      const mediaType = file.type.startsWith('image/') ? 'image' : 'file';
+      const fingerprintHash = await sha256Hash(base64);
+      const payload = JSON.stringify({ t: mediaType, d: base64, m: file.type });
       const { ciphertext, iv, authTag } = await encrypt(payload, convKey);
-      const m = await msgApi.send(id, ciphertext, iv, authTag);
-      const newM = { ...m, decrypted: base64, mediaType: (file.type.startsWith('image/') ? 'image' : 'file') as 'image' | 'file', mime: file.type, sender_id: userId };
+      const m = await msgApi.send(id, ciphertext, iv, authTag, {
+        fingerprintHash,
+        mediaType,
+        mimeType: file.type,
+      });
+      const newM: Message = {
+        ...m,
+        decrypted: base64,
+        mediaType: mediaType as 'image' | 'file',
+        mime: file.type,
+        sender_id: userId,
+        fingerprint_hash: fingerprintHash,
+        kill_switch_active: false,
+      };
       setMsgs(prev => [...prev, newM]);
       setNewMsgIds(prev => new Set(Array.from(prev).concat(m.id)));
     } catch (e) {
       alert((e as Error).message);
     } finally {
       setSending(false);
+    }
+  };
+
+  const handleForward = async (messageId: string) => {
+    try {
+      const { allowed } = await mediaApi.canForward(messageId);
+      if (!allowed) {
+        await mediaApi.requestForward(messageId);
+        alert('Forward permission requested. The sender must approve.');
+        return;
+      }
+      const otherConvs = convList.filter(c => c.id !== id);
+      if (otherConvs.length === 0) {
+        alert('No other conversations to forward to.');
+        return;
+      }
+      const names = otherConvs.map(c => c.participants?.map(p => p.name).filter(Boolean).join(', ') || c.id);
+      const choice = prompt(`Forward to:\n${otherConvs.map((c, i) => `${i + 1}. ${names[i] || c.id}`).join('\n')}\n\nEnter number (1-${otherConvs.length}):`);
+      const idx = parseInt(choice ?? '', 10);
+      if (idx >= 1 && idx <= otherConvs.length) {
+        const target = otherConvs[idx - 1];
+        await mediaApi.forward(messageId, target.id);
+        alert(`Forwarded to ${names[idx - 1] || target.id}`);
+      }
+    } catch (e) {
+      alert((e as Error).message);
     }
   };
 
@@ -217,6 +262,10 @@ export default function ChatPage() {
             isNew={newMsgIds.has(m.id)}
             mediaType={m.mediaType}
             mime={m.mime}
+            messageId={m.id}
+            mediaId={m.media_id ?? undefined}
+            isKilled={m.kill_switch_active === true}
+            onForward={handleForward}
           />
         ))}
         <div ref={bottomRef} />

@@ -58,9 +58,23 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS media (
     id TEXT PRIMARY KEY,
     message_id TEXT REFERENCES messages(id),
+    owner_id TEXT NOT NULL REFERENCES users(id),
     ipfs_cid TEXT,
-    fingerprint_hash TEXT,
+    fingerprint_hash TEXT NOT NULL,
     mime_type TEXT,
+    blockchain_tx TEXT,
+    kill_switch_active INTEGER DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS permission_requests (
+    id TEXT PRIMARY KEY,
+    message_id TEXT NOT NULL REFERENCES messages(id),
+    media_id TEXT REFERENCES media(id),
+    requester_id TEXT NOT NULL REFERENCES users(id),
+    owner_id TEXT NOT NULL REFERENCES users(id),
+    type TEXT NOT NULL,
+    status TEXT DEFAULT 'pending',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 
@@ -97,11 +111,45 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_messages_created ON messages(created_at);
   CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);
   CREATE INDEX IF NOT EXISTS idx_users_phone_hash ON users(phone_hash);
+  CREATE INDEX IF NOT EXISTS idx_media_message ON media(message_id);
+  CREATE INDEX IF NOT EXISTS idx_media_fingerprint ON media(fingerprint_hash);
+  CREATE INDEX IF NOT EXISTS idx_permission_requests_message ON permission_requests(message_id);
+  CREATE INDEX IF NOT EXISTS idx_permission_requests_media ON permission_requests(media_id);
 `);
 
 console.log('Database initialized at', DB_PATH);
 
 // Run migrations
+let mediaCols = [];
+try {
+  mediaCols = db.prepare('PRAGMA table_info(media)').all();
+} catch {}
+if (mediaCols.length && !mediaCols.some(c => c.name === 'owner_id')) {
+  db.exec('ALTER TABLE media ADD COLUMN owner_id TEXT REFERENCES users(id)');
+}
+if (mediaCols.length && !mediaCols.some(c => c.name === 'blockchain_tx')) {
+  db.exec('ALTER TABLE media ADD COLUMN blockchain_tx TEXT');
+}
+if (mediaCols.length && !mediaCols.some(c => c.name === 'kill_switch_active')) {
+  db.exec('ALTER TABLE media ADD COLUMN kill_switch_active INTEGER DEFAULT 0');
+}
+if (!db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='permission_requests'").get()) {
+  db.exec(`
+    CREATE TABLE permission_requests (
+      id TEXT PRIMARY KEY,
+      message_id TEXT NOT NULL REFERENCES messages(id),
+      media_id TEXT REFERENCES media(id),
+      requester_id TEXT NOT NULL REFERENCES users(id),
+      owner_id TEXT NOT NULL REFERENCES users(id),
+      type TEXT NOT NULL,
+      status TEXT DEFAULT 'pending',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE INDEX IF NOT EXISTS idx_permission_requests_message ON permission_requests(message_id);
+    CREATE INDEX IF NOT EXISTS idx_permission_requests_media ON permission_requests(media_id);
+  `);
+}
+
 const cols = db.prepare('PRAGMA table_info(users)').all();
 if (!cols.some(c => c.name === 'username')) {
   db.exec('ALTER TABLE users ADD COLUMN username TEXT');

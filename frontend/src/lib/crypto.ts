@@ -60,6 +60,16 @@ export async function encrypt(plaintext: string, key: CryptoKey): Promise<{ ciph
   };
 }
 
+/** SHA-256 hash of string (for media fingerprint / base64) */
+export async function sha256Hash(data: string): Promise<string> {
+  const encoded = new TextEncoder().encode(data);
+  const digest = await crypto.subtle.digest('SHA-256', encoded);
+  const hex = Array.from(new Uint8Array(digest))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+  return hex;
+}
+
 export async function decrypt(ciphertext: string, iv: string, authTag: string, key: CryptoKey): Promise<string> {
   const ivArr = new Uint8Array(atob(iv).split('').map(c => c.charCodeAt(0)));
   const tagArr = new Uint8Array(atob(authTag).split('').map(c => c.charCodeAt(0)));

@@ -90,8 +90,17 @@ export const messages = {
       iv: string;
       auth_tag: string;
       created_at: string;
+      media_id?: string | null;
+      fingerprint_hash?: string | null;
+      kill_switch_active?: boolean;
     }>>(`/api/messages/${conversationId}`),
-  send: (conversationId: string, payloadEncrypted: string, iv: string, authTag: string) =>
+  send: (
+    conversationId: string,
+    payloadEncrypted: string,
+    iv: string,
+    authTag: string,
+    opts?: { fingerprintHash?: string; mediaType?: 'image' | 'file'; mimeType?: string }
+  ) =>
     api<{
       id: string;
       sender_id: string;
@@ -99,8 +108,44 @@ export const messages = {
       iv: string;
       auth_tag: string;
       created_at: string;
+      media_id?: string | null;
     }>('/api/messages/send', {
       method: 'POST',
-      body: JSON.stringify({ conversationId, payloadEncrypted, iv, authTag }),
+      body: JSON.stringify({
+        conversationId,
+        payloadEncrypted,
+        iv,
+        authTag,
+        ...(opts?.fingerprintHash && { fingerprintHash: opts.fingerprintHash }),
+        ...(opts?.mediaType && { mediaType: opts.mediaType }),
+        ...(opts?.mimeType && { mimeType: opts.mimeType }),
+      }),
     }),
+};
+
+export const media = {
+  killedFingerprints: () => api<string[]>('/api/media/killed-fingerprints'),
+  canForward: (messageId: string) => api<{ allowed: boolean }>(`/api/media/can-forward/${messageId}`),
+  canDownload: (mediaId: string) => api<{ allowed: boolean }>(`/api/media/can-download/${mediaId}`),
+  requestForward: (messageId: string) =>
+    api<{ id: string; status: string }>(`/api/media/messages/${messageId}/request-forward`, { method: 'POST' }),
+  grantForward: (messageId: string, granted: boolean) =>
+    api<{ status: string }>(`/api/media/messages/${messageId}/grant-forward`, {
+      method: 'POST',
+      body: JSON.stringify({ granted }),
+    }),
+  forward: (messageId: string, targetConversationId: string) =>
+    api<{ id: string }>(`/api/media/messages/${messageId}/forward`, {
+      method: 'POST',
+      body: JSON.stringify({ targetConversationId }),
+    }),
+  requestDownload: (mediaId: string) =>
+    api<{ id: string; status: string }>(`/api/media/${mediaId}/request-download`, { method: 'POST' }),
+  grantDownload: (mediaId: string, granted: boolean) =>
+    api<{ status: string }>(`/api/media/${mediaId}/grant-download`, {
+      method: 'POST',
+      body: JSON.stringify({ granted }),
+    }),
+  activateKillSwitch: (mediaId: string) =>
+    api<{ activated: boolean }>(`/api/media/${mediaId}/kill`, { method: 'POST' }),
 };

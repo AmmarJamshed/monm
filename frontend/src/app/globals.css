@@ -33,6 +33,16 @@ body {
   -webkit-touch-callout: none;
 }
 
+/* Screenshot/content capture prevention */
+.monm-no-capture,
+.monm-no-capture * {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
 html { overscroll-behavior-y: contain; }
 
 /* Inbox-style: flat white/grey, no gradients */
