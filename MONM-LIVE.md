@@ -91,3 +91,8 @@ Or use the script (no uncommitted changes):
    - `NEXT_PUBLIC_WS_URL` = `wss://monm-api.onrender.com`
 2. **Trigger a new build** — Deploys → Trigger deploy → Clear cache and deploy
 3. **Database** — With Starter + disk, all data persists. No re-signup needed.
+
+**If the UI still looks old (no sidebar, dark theme):**
+1. **Netlify:** Go to https://app.netlify.com → your site → **Deploys** → **Trigger deploy** → **Clear cache and deploy site**
+2. **Browser:** Hard refresh (Ctrl+Shift+R) or try an incognito/private window
+3. Wait 2–3 minutes for the new build to finish and CDN cache to update
