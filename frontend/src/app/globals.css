@@ -3,18 +3,29 @@
 @tailwind utilities;
 
 :root {
-  --monm-primary: #00C9B7;
+  /* Inbox template palette - white, light grey, vibrant blue */
+  --inbox-bg: #ffffff;
+  --inbox-bg-secondary: #f8fafc;
+  --inbox-sidebar: #ffffff;
+  --inbox-border: #e2e8f0;
+  --inbox-border-light: #f1f5f9;
+  --inbox-text: #1e293b;
+  --inbox-text-muted: #64748b;
+  --inbox-text-light: #94a3b8;
+  --inbox-blue: #2563eb;
+  --inbox-blue-hover: #1d4ed8;
+  --inbox-blue-bg: #eff6ff;
+  --inbox-blue-bg-strong: #dbeafe;
+  --inbox-radius: 8px;
+  --inbox-radius-lg: 12px;
+  --monm-primary: #2563eb;
   --monm-secondary: #8B5CF6;
   --monm-accent: #F472B6;
-  --monm-gold: #FBBF24;
-  --monm-sky: #38BDF8;
-  --monm-dark: #1F2937;
-  --monm-bg: #FAF8FC;
-  --monm-glass: rgba(255, 255, 255, 0.85);
-  --monm-glass-border: rgba(203, 213, 225, 0.5);
-  --monm-glow: rgba(0, 201, 183, 0.35);
-  --monm-glow-pink: rgba(244, 114, 182, 0.35);
-  --monm-glow-purple: rgba(139, 92, 246, 0.3);
+  --monm-dark: #1e293b;
+  --monm-bg: #f8fafc;
+  --monm-glass: rgba(255, 255, 255, 0.95);
+  --monm-glass-border: rgba(226, 232, 240, 0.8);
+  --monm-glow: rgba(37, 99, 235, 0.2);
 }
 
 body {
@@ -24,32 +35,25 @@ body {
 
 html { overscroll-behavior-y: contain; }
 
-/* Light, cheerful gradient background - warm and inviting */
+/* Inbox-style: flat white/grey, no gradients */
 .bg-ar-mesh {
-  background:
-    radial-gradient(ellipse 90% 60% at 20% 15%, rgba(139, 92, 246, 0.12), transparent 50%),
-    radial-gradient(ellipse 85% 55% at 85% 10%, rgba(0, 201, 183, 0.15), transparent 50%),
-    radial-gradient(ellipse 70% 50% at 50% 90%, rgba(244, 114, 182, 0.1), transparent 50%),
-    radial-gradient(ellipse 60% 45% at 5% 70%, rgba(251, 191, 36, 0.08), transparent 50%),
-    linear-gradient(180deg, #FAF8FC 0%, #F5F3FF 40%, #FAF8FC 100%);
+  background: var(--inbox-bg-secondary);
   min-height: 100vh;
 }
 
-/* Light frosted glass panels */
+/* Inbox-style panels - flat white, subtle border */
 .glass-panel {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(203, 213, 225, 0.4);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+  background: var(--inbox-bg);
+  border: 1px solid var(--inbox-border);
+  border-radius: var(--inbox-radius);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .glass-panel-strong {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(203, 213, 225, 0.5);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  background: var(--inbox-bg);
+  border: 1px solid var(--inbox-border);
+  border-radius: var(--inbox-radius-lg);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 /* Ping / radar ring animation */
@@ -68,6 +72,14 @@ html { overscroll-behavior-y: contain; }
   0%, 100% { box-shadow: 0 0 12px var(--monm-glow); }
   50% { box-shadow: 0 0 24px var(--monm-glow), 0 0 40px var(--monm-glow); }
 }
+
+/* Inbox template utilities */
+.inbox-sidebar { background: var(--inbox-sidebar); border-right: 1px solid var(--inbox-border); }
+.inbox-main { background: var(--inbox-bg); }
+.inbox-selected { background: var(--inbox-blue-bg-strong); }
+.inbox-input { background: var(--inbox-bg-secondary); border: 1px solid var(--inbox-border); border-radius: var(--inbox-radius); }
+.inbox-btn-primary { background: var(--inbox-blue); color: #fff; border-radius: var(--inbox-radius); }
+.inbox-btn-primary:hover { background: var(--inbox-blue-hover); color: #fff; }
 
 @keyframes float-subtle {
   0%, 100% { transform: translateY(0); }

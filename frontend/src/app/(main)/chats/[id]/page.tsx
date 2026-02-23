@@ -33,6 +33,7 @@ export default function ChatPage() {
   const wsRef = useRef<WebSocket | null>(null);
   const convKeyRef = useRef<CryptoKey | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   convKeyRef.current = convKey;
 
@@ -147,7 +148,6 @@ export default function ChatPage() {
     }
   };
 
-  const cameraInputRef = useRef<HTMLInputElement>(null);
   const sendMedia = async (file: File) => {
     if (!userId || !convKey || sending) return;
     if (file.size > 10 * 1024 * 1024) { alert('File too large (max 10MB)'); return; }
@@ -194,19 +194,19 @@ export default function ChatPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-ar-mesh">
-        <div className="text-monm-primary font-medium animate-pulse">Loading…</div>
+      <div className="flex-1 flex items-center justify-center">
+        <div className="font-medium animate-pulse" style={{ color: 'var(--inbox-blue)' }}>Loading…</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-ar-mesh">
-      <header className="glass-panel-strong px-4 py-3 flex items-center gap-3 border-b border-slate-200">
-        <button onClick={() => router.back()} className="text-monm-primary text-2xl font-bold hover:opacity-80">←</button>
-        <h1 className="flex-1 font-bold bg-gradient-to-r from-monm-primary to-monm-accent bg-clip-text text-transparent">Chat</h1>
+    <div className="flex-1 flex flex-col min-h-0">
+      <header className="px-4 py-3 flex items-center gap-3 border-b border-slate-200 shrink-0">
+        <button onClick={() => router.back()} className="p-2 -ml-2 rounded-lg hover:bg-slate-100 text-slate-600 font-bold">←</button>
+        <h1 className="flex-1 font-semibold text-slate-800">Chat</h1>
       </header>
-      <main className="flex-1 overflow-auto p-4 space-y-3">
+      <main className="flex-1 overflow-auto p-4 space-y-3 bg-slate-50">
         {msgs.map(m => (
           <MessageBubble
             key={m.id}
@@ -221,59 +221,19 @@ export default function ChatPage() {
         ))}
         <div ref={bottomRef} />
       </main>
-      <footer className="glass-panel-strong p-4 border-t border-slate-200 flex flex-col gap-2">
+      <footer className="p-4 border-t border-slate-200 bg-white shrink-0">
         <div className="flex gap-2 items-center">
-          <input
-            type="file"
-            ref={cameraInputRef}
-            accept="image/*"
-            capture="environment"
-            className="hidden"
-            onChange={e => { const f = e.target.files?.[0]; if (f) { sendMedia(f); e.target.value = ''; } }}
-          />
-          <button
-            type="button"
-            onClick={() => cameraInputRef.current?.click()}
-            disabled={sending}
-            className="p-3 rounded-xl glass-panel border border-slate-200 text-slate-700 hover:bg-monm-primary/15 hover:border-monm-primary/40 transition-all disabled:opacity-50"
-            title="Take photo or choose image"
-            aria-label="Photo"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 13v7a2 2 0 01-2 2H7a2 2 0 01-2-2v-7" /></svg>
+          <input type="file" ref={cameraInputRef} accept="image/*" capture="environment" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) { sendMedia(f); e.target.value = ''; } }} />
+          <button type="button" onClick={() => cameraInputRef.current?.click()} disabled={sending} className="p-2.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-50" title="Photo" aria-label="Photo">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 13v7a2 2 0 01-2 2H7a2 2 0 01-2-2v-7" /></svg>
           </button>
-          <input
-            type="file"
-            accept="image/*"
-            className="hidden"
-            id="gallery-picker"
-            onChange={e => { const f = e.target.files?.[0]; if (f) { sendMedia(f); e.target.value = ''; } }}
-          />
-          <button
-            type="button"
-            onClick={() => document.getElementById('gallery-picker')?.click()}
-            disabled={sending}
-            className="p-3 rounded-xl glass-panel border border-slate-200 text-slate-700 hover:bg-monm-primary/15 hover:border-monm-primary/40 transition-all disabled:opacity-50"
-            title="Choose from gallery"
-            aria-label="Gallery"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+          <input type="file" accept="image/*" className="hidden" id="gallery-picker" onChange={e => { const f = e.target.files?.[0]; if (f) { sendMedia(f); e.target.value = ''; } }} />
+          <button type="button" onClick={() => document.getElementById('gallery-picker')?.click()} disabled={sending} className="p-2.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-50" title="Gallery" aria-label="Gallery">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
           </button>
-          <input
-            type="file"
-            accept="*/*"
-            className="hidden"
-            id="file-picker"
-            onChange={e => { const f = e.target.files?.[0]; if (f) { sendMedia(f); e.target.value = ''; } }}
-          />
-          <button
-            type="button"
-            onClick={() => document.getElementById('file-picker')?.click()}
-            disabled={sending}
-            className="p-3 rounded-xl glass-panel border border-slate-200 text-slate-700 hover:bg-monm-primary/15 hover:border-monm-primary/40 transition-all disabled:opacity-50"
-            title="Attach file"
-            aria-label="File"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" /></svg>
+          <input type="file" accept="*/*" className="hidden" id="file-picker" onChange={e => { const f = e.target.files?.[0]; if (f) { sendMedia(f); e.target.value = ''; } }} />
+          <button type="button" onClick={() => document.getElementById('file-picker')?.click()} disabled={sending} className="p-2.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-50" title="File" aria-label="File">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" /></svg>
           </button>
           <input
             type="text"
@@ -281,13 +241,10 @@ export default function ChatPage() {
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && !e.shiftKey && send()}
-            className="flex-1 px-5 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-monm-primary focus:border-monm-primary/50 outline-none transition"
+            className="flex-1 px-4 py-2.5 rounded-lg outline-none"
+            style={{ border: '1px solid var(--inbox-border)', color: 'var(--inbox-text)' }}
           />
-          <button
-            onClick={send}
-            disabled={sending || !input.trim()}
-            className="px-6 py-3 bg-gradient-to-r from-monm-primary via-emerald-400 to-cyan-400 text-slate-900 font-bold rounded-2xl disabled:opacity-50 shadow-glow hover:scale-105 transition-all"
-          >
+          <button onClick={send} disabled={sending || !input.trim()} className="px-4 py-2.5 font-semibold rounded-lg disabled:opacity-50 inbox-btn-primary">
             Send
           </button>
         </div>

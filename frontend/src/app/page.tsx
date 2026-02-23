@@ -66,7 +66,7 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-ar-mesh">
       <div className="w-full max-w-sm">
-        <h1 className="text-5xl font-bold text-center mb-2 bg-gradient-to-r from-monm-primary via-monm-accent to-monm-secondary bg-clip-text text-transparent drop-shadow-[0_0_20px_rgba(0,229,204,0.3)]">
+        <h1 className="text-5xl font-bold text-center mb-2" style={{ color: 'var(--inbox-blue)' }}>
           MonM
         </h1>
         <p className="text-center text-slate-600 text-sm mb-8 font-medium">Privacy-first · Encrypted · Stay connected ✨</p>
@@ -74,27 +74,25 @@ export default function Home() {
         <div className="flex gap-2 mb-1">
           <button
             className={`flex-1 py-3 rounded-t-2xl font-semibold transition-all duration-300 ${
-              view === 'login'
-                ? 'glass-panel-strong text-monm-primary border-2 border-monm-primary/60 shadow-glow'
-                : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100/80'
+              view === 'login' ? 'glass-panel-strong border-2' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100/80'
             }`}
+            style={view === 'login' ? { borderColor: 'var(--inbox-blue)', color: 'var(--inbox-blue)' } : {}}
             onClick={() => { setView('login'); setError(''); }}
           >
             Sign In
           </button>
           <button
             className={`flex-1 py-3 rounded-t-2xl font-semibold transition-all duration-300 ${
-              view === 'signup'
-                ? 'glass-panel-strong text-monm-primary border-2 border-monm-primary/60 shadow-glow'
-                : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100/80'
+              view === 'signup' ? 'glass-panel-strong border-2' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100/80'
             }`}
+            style={view === 'signup' ? { borderColor: 'var(--inbox-blue)', color: 'var(--inbox-blue)' } : {}}
             onClick={() => { setView('signup'); setError(''); }}
           >
             Sign Up
           </button>
         </div>
 
-        <div className="glass-panel-strong p-6 rounded-b-2xl rounded-tl-2xl border border-slate-200 shadow-glow">
+        <div className="glass-panel-strong p-6 rounded-b-2xl rounded-tl-2xl" style={{ borderColor: 'var(--inbox-border)' }}>
           {view === 'signup' ? (
             <form onSubmit={handleSignup} className="space-y-4">
               <input
@@ -110,10 +108,9 @@ export default function Home() {
                   type="button"
                   onClick={() => { setSignupMode('phone'); setError(''); }}
                   className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all ${
-                    signupMode === 'phone'
-                      ? 'bg-monm-primary/25 text-monm-primary border-2 border-monm-primary/50 shadow-sm'
-                      : 'bg-slate-100 text-slate-500 border border-slate-200 hover:border-slate-300'
+                    signupMode === 'phone' ? 'border-2' : 'bg-slate-100 text-slate-500 border border-slate-200 hover:border-slate-300'
                   }`}
+                  style={signupMode === 'phone' ? { background: 'var(--inbox-blue-bg)', color: 'var(--inbox-blue)', borderColor: 'var(--inbox-blue)' } : {}}
                 >
                   Phone
                 </button>
@@ -121,10 +118,9 @@ export default function Home() {
                   type="button"
                   onClick={() => { setSignupMode('username'); setError(''); }}
                   className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all ${
-                    signupMode === 'username'
-                      ? 'bg-monm-primary/25 text-monm-primary border-2 border-monm-primary/50 shadow-sm'
-                      : 'bg-slate-100 text-slate-500 border border-slate-200 hover:border-slate-300'
+                    signupMode === 'username' ? 'border-2' : 'bg-slate-100 text-slate-500 border border-slate-200 hover:border-slate-300'
                   }`}
+                  style={signupMode === 'username' ? { background: 'var(--inbox-blue-bg)', color: 'var(--inbox-blue)', borderColor: 'var(--inbox-blue)' } : {}}
                 >
                   Username
                 </button>
@@ -152,7 +148,7 @@ export default function Home() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3.5 bg-gradient-to-r from-monm-primary via-emerald-400 to-cyan-400 text-slate-900 font-bold rounded-xl hover:opacity-95 hover:scale-[1.02] disabled:opacity-50 shadow-glow transition-all duration-300"
+                className="w-full py-3.5 font-bold rounded-xl hover:opacity-95 disabled:opacity-50 transition-all duration-300 inbox-btn-primary"
               >
                 {loading ? 'Creating…' : 'Create Account'}
               </button>
@@ -164,10 +160,9 @@ export default function Home() {
                   type="button"
                   onClick={() => { setLoginMode('phone'); setError(''); }}
                   className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all ${
-                    loginMode === 'phone'
-                      ? 'bg-monm-primary/25 text-monm-primary border-2 border-monm-primary/50 shadow-sm'
-                      : 'bg-slate-100 text-slate-500 border border-slate-200 hover:border-slate-300'
+                    loginMode === 'phone' ? 'border-2' : 'bg-slate-100 text-slate-500 border border-slate-200 hover:border-slate-300'
                   }`}
+                  style={loginMode === 'phone' ? { background: 'var(--inbox-blue-bg)', color: 'var(--inbox-blue)', borderColor: 'var(--inbox-blue)' } : {}}
                 >
                   Phone
                 </button>
@@ -175,10 +170,9 @@ export default function Home() {
                   type="button"
                   onClick={() => { setLoginMode('username'); setError(''); }}
                   className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all ${
-                    loginMode === 'username'
-                      ? 'bg-monm-primary/25 text-monm-primary border-2 border-monm-primary/50 shadow-sm'
-                      : 'bg-slate-100 text-slate-500 border border-slate-200 hover:border-slate-300'
+                    loginMode === 'username' ? 'border-2' : 'bg-slate-100 text-slate-500 border border-slate-200 hover:border-slate-300'
                   }`}
+                  style={loginMode === 'username' ? { background: 'var(--inbox-blue-bg)', color: 'var(--inbox-blue)', borderColor: 'var(--inbox-blue)' } : {}}
                 >
                   Username
                 </button>
@@ -205,7 +199,7 @@ export default function Home() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3.5 bg-gradient-to-r from-monm-primary via-emerald-400 to-cyan-400 text-slate-900 font-bold rounded-xl hover:opacity-95 hover:scale-[1.02] disabled:opacity-50 shadow-glow transition-all duration-300"
+                className="w-full py-3.5 font-bold rounded-xl hover:opacity-95 disabled:opacity-50 transition-all duration-300 inbox-btn-primary"
               >
                 {loading ? 'Signing in…' : 'Sign In'}
               </button>

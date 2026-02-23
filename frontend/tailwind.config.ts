@@ -6,15 +6,15 @@ const config: Config = {
     extend: {
       colors: {
         monm: {
-          primary: '#00C9B7',
+          primary: '#2563eb',
           secondary: '#8B5CF6',
           accent: '#F472B6',
           gold: '#FBBF24',
           sky: '#38BDF8',
-          dark: '#1F2937',
-          bg: '#FAF8FC',
-          'glass': 'rgba(255,255,255,0.85)',
-          'glass-border': 'rgba(203,213,225,0.5)',
+          dark: '#1e293b',
+          bg: '#f8fafc',
+          'glass': '#ffffff',
+          'glass-border': '#e2e8f0',
         },
       },
       fontFamily: {

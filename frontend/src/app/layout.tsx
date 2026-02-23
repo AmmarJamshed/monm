@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   title: 'MonM — Secure Messaging',
   description: 'Privacy-first, traceable messaging. People say MonM me.',
   manifest: '/manifest.json',
-  themeColor: '#FAF8FC',
+  themeColor: '#f8fafc',
   viewport: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no',
 };
 

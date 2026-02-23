@@ -27,17 +27,18 @@ export default function MessageBubble({ text, isMe, label, time, isNew = false, 
         {/* Ping ring for incoming messages */}
         {showPing && (
           <div
-            className="absolute inset-0 rounded-2xl border-2 border-monm-primary pointer-events-none animate-ping-ring"
-            style={{ margin: '-4px' }}
+            className="absolute inset-0 rounded-xl border-2 pointer-events-none animate-ping-ring"
+            style={{ borderColor: 'var(--inbox-blue)', margin: '-4px' }}
             aria-hidden
           />
         )}
         <div
-          className={`px-4 py-2.5 rounded-2xl ${
+          className={`px-4 py-2.5 rounded-xl ${
             isMe
-              ? 'bg-gradient-to-br from-monm-primary via-emerald-400 to-cyan-400 text-slate-900 font-medium shadow-glow'
-              : 'glass-panel-strong text-slate-800 border border-monm-secondary/25 bg-gradient-to-br from-violet-50 to-pink-50 shadow-glow-purple'
+              ? 'font-medium'
+              : 'glass-panel-strong border'
           }`}
+          style={isMe ? { background: 'var(--inbox-blue)', color: '#fff' } : { color: 'var(--inbox-text)', borderColor: 'var(--inbox-border)' }}
         >
           <p className={`text-xs mb-1 ${isMe ? 'opacity-90' : 'text-slate-500'}`}>
             {label} · {time}
