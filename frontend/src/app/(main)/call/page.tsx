@@ -1,10 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 
-export default function CallPage() {
+function CallContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const withId = searchParams.get('with');
   const [micStatus, setMicStatus] = useState<'idle' | 'requesting' | 'granted' | 'denied' | 'error'>('idle');
   const [permissionMsg, setPermissionMsg] = useState<string>('');
 
@@ -40,8 +42,12 @@ export default function CallPage() {
 
   return (
     <div className="flex-1 flex flex-col p-6">
-      <h1 className="text-xl font-semibold text-slate-800 mb-2">Voice Call</h1>
-      <p className="text-slate-600 text-sm mb-6">Allow microphone access to enable voice calls.</p>
+      <h1 className="text-xl font-semibold text-slate-800 mb-2">
+        {withId ? 'Voice Call' : 'Voice Call'}
+      </h1>
+      <p className="text-slate-600 text-sm mb-6">
+        {withId ? 'Prepare to call this contact. ' : ''}Allow microphone access to enable voice calls.
+      </p>
       <div className="bg-slate-50 rounded-xl p-6 border border-slate-200 max-w-md">
         <div className="flex items-center gap-4 mb-4">
           <div className="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center">
@@ -67,7 +73,20 @@ export default function CallPage() {
           </p>
         )}
       </div>
-      <p className="mt-6 text-slate-500 text-sm">Voice calls are coming soon. Check back later.</p>
+      <p className="mt-6 text-slate-500 text-sm">Voice calls are coming soon. WebRTC signaling will be added next.</p>
+      {withId && (
+        <button onClick={() => router.back()} className="mt-4 text-sm text-slate-600 hover:text-slate-800 underline">
+          ← Back to chat
+        </button>
+      )}
     </div>
+  );
+}
+
+export default function CallPage() {
+  return (
+    <Suspense fallback={<div className="p-6 animate-pulse">Loading…</div>}>
+      <CallContent />
+    </Suspense>
   );
 }

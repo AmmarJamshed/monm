@@ -133,6 +133,9 @@ if (mediaCols.length && !mediaCols.some(c => c.name === 'blockchain_tx')) {
 if (mediaCols.length && !mediaCols.some(c => c.name === 'kill_switch_active')) {
   db.exec('ALTER TABLE media ADD COLUMN kill_switch_active INTEGER DEFAULT 0');
 }
+if (mediaCols.length && !mediaCols.some(c => c.name === 'file_path')) {
+  db.exec('ALTER TABLE media ADD COLUMN file_path TEXT');
+}
 if (!db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='permission_requests'").get()) {
   db.exec(`
     CREATE TABLE permission_requests (

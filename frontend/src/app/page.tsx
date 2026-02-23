@@ -66,6 +66,9 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-ar-mesh">
       <div className="w-full max-w-sm">
+        <div className="flex justify-center mb-4">
+          <img src="/monm-logo.png" alt="MonM" className="h-20 w-auto object-contain" />
+        </div>
         <h1 className="text-5xl font-bold text-center mb-2" style={{ color: 'var(--inbox-blue)' }}>
           MonM
         </h1>

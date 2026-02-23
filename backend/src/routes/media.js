@@ -1,11 +1,91 @@
 import { Router } from 'express';
 import { v4 as uuidv4 } from 'uuid';
+import path from 'path';
+import fs from 'fs';
+import multer from 'multer';
 import { getDb } from '../db/index.js';
 import { authMiddleware } from '../middleware/auth.js';
+import { config } from '../config/index.js';
+import { sha256Buffer } from '../crypto/index.js';
 import * as blockchain from '../blockchain/index.js';
 
 const router = Router();
 router.use(authMiddleware);
+
+const uploadDir = config.uploadPath;
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+
+const storage = multer.diskStorage({
+  destination: (_req, _file, cb) => cb(null, uploadDir),
+  filename: (req, file, cb) => {
+    const ext = (file.originalname?.match(/\.[^.]+$/) || ['.bin'])[0];
+    cb(null, `${uuidv4()}${ext}`);
+  },
+});
+const upload = multer({
+  storage,
+  limits: { fileSize: 25 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => cb(null, true),
+});
+
+/** POST upload file - returns media_id for use in send message */
+router.post('/upload', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+    const { conversationId } = req.body || {};
+    if (!conversationId) return res.status(400).json({ error: 'conversationId required' });
+    const db = getDb();
+    const participant = db.prepare(
+      'SELECT 1 FROM conversation_participants WHERE conversation_id = ? AND user_id = ?'
+    ).get(conversationId, req.userId);
+    if (!participant) return res.status(403).json({ error: 'Not in conversation' });
+    const mediaId = uuidv4();
+    const buf = fs.readFileSync(req.file.path);
+    const fingerprintHash = sha256Buffer(buf).toString('hex');
+    const fpTx = await blockchain.registerFingerprint(fingerprintHash, '');
+    const ext = path.extname(req.file.originalname || req.file.filename) || '.bin';
+    const storedName = `${mediaId}${ext}`;
+    const filePath = path.join(uploadDir, storedName);
+    fs.renameSync(req.file.path, filePath);
+    const mime = req.file.mimetype || 'application/octet-stream';
+    const mediaType = mime.startsWith('image/') ? 'image' : 'file';
+    db.prepare(`
+      INSERT INTO media (id, owner_id, fingerprint_hash, mime_type, file_path, blockchain_tx)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `).run(mediaId, req.userId, fingerprintHash, mime, storedName, fpTx);
+    res.json({ media_id: mediaId, fingerprint_hash: fingerprintHash, mime_type: mime, media_type: mediaType });
+  } catch (e) {
+    if (req.file?.path && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+/** GET serve media file - user must be owner or in the conversation */
+router.get('/:mediaId/blob', (req, res) => {
+  try {
+    const { mediaId } = req.params;
+    const db = getDb();
+    const media = db.prepare('SELECT m.file_path, m.mime_type, m.message_id, m.kill_switch_active, m.owner_id FROM media m WHERE m.id = ?').get(mediaId);
+    if (!media) return res.status(404).json({ error: 'Media not found' });
+    if (media.kill_switch_active === 1) return res.status(410).send('Content disabled');
+    if (!media.file_path) return res.status(404).json({ error: 'File not stored' });
+    if (media.owner_id === req.userId) {
+      // Owner can always access
+    } else if (media.message_id) {
+      const msg = db.prepare('SELECT conversation_id FROM messages WHERE id = ?').get(media.message_id);
+      const participant = msg ? db.prepare('SELECT 1 FROM conversation_participants WHERE conversation_id = ? AND user_id = ?').get(msg.conversation_id, req.userId) : null;
+      if (!participant) return res.status(403).json({ error: 'Access denied' });
+    } else {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+    const fullPath = path.join(uploadDir, media.file_path);
+    if (!fs.existsSync(fullPath)) return res.status(404).json({ error: 'File not found' });
+    res.setHeader('Content-Type', media.mime_type || 'application/octet-stream');
+    res.sendFile(path.resolve(fullPath));
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
 
 /** GET killed fingerprint hashes - client checks before rendering media */
 router.get('/killed-fingerprints', (req, res) => {

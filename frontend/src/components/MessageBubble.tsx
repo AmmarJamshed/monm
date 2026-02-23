@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { media as mediaApi } from '@/lib/api';
 
 type Props = {
-  text: string;
+  text?: string;
   isMe: boolean;
   label: string;
   time: string;
@@ -13,6 +13,7 @@ type Props = {
   mime?: string;
   messageId?: string;
   mediaId?: string | null;
+  mediaRef?: string;
   isKilled?: boolean;
   onForward?: (messageId: string) => void;
 };
@@ -27,6 +28,7 @@ export default function MessageBubble({
   mime,
   messageId,
   mediaId,
+  mediaRef,
   isKilled = false,
   onForward,
 }: Props) {
@@ -39,14 +41,19 @@ export default function MessageBubble({
     return () => clearTimeout(t);
   }, [showPing]);
 
+  const blobUrl = (mediaId && (mediaRef || !text)) ? mediaApi.blobUrl(mediaId) : null;
+  const imgSrc = mediaType === 'image' && (text ? `data:${mime || 'image/jpeg'};base64,${text}` : blobUrl);
+  const fileHref = mediaType === 'file' && (text ? `data:${mime || 'application/octet-stream'};base64,${text}` : blobUrl);
+
   const handleFileDownload = async () => {
     if (!mediaId || isMe) return;
     try {
       const { allowed } = await mediaApi.canDownload(mediaId);
-      if (allowed) {
+      if (allowed && fileHref) {
         const a = document.createElement('a');
-        a.href = `data:${mime || 'application/octet-stream'};base64,${text}`;
+        a.href = fileHref;
         a.download = 'file';
+        a.target = '_blank';
         a.click();
       } else {
         await mediaApi.requestDownload(mediaId);
@@ -93,12 +100,12 @@ export default function MessageBubble({
             <div className="py-4 px-3 rounded-lg bg-slate-100 text-slate-500 text-sm mt-1">
               Content disabled — leaked. Kill switch activated.
             </div>
-          ) : mediaType === 'image' && text ? (
-            <img src={`data:${mime || 'image/jpeg'};base64,${text}`} alt="Shared" className="max-w-full max-h-64 rounded-lg object-contain mt-1" />
+          ) : mediaType === 'image' && imgSrc ? (
+            <img src={imgSrc} alt="Shared" className="max-w-full max-h-64 rounded-lg object-contain mt-1" />
           ) : mediaType === 'file' ? (
             <div className="flex items-center gap-2 mt-1">
-              {isMe ? (
-                <a href={`data:${mime || 'application/octet-stream'};base64,${text}`} download className="text-sm underline flex items-center gap-2">
+              {isMe && fileHref ? (
+                <a href={fileHref} download target="_blank" rel="noopener noreferrer" className="text-sm underline flex items-center gap-2">
                   <span>📎 File</span>
                 </a>
               ) : downloadRequested ? (
@@ -110,7 +117,7 @@ export default function MessageBubble({
               )}
             </div>
           ) : (
-            <p className="text-sm leading-relaxed">{text}</p>
+            <p className="text-sm leading-relaxed">{text ?? '[Encrypted]'}</p>
           )}
         </div>
       </div>

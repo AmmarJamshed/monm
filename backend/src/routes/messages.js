@@ -43,7 +43,7 @@ router.get('/:conversationId', (req, res) => {
 
 router.post('/send', async (req, res) => {
   try {
-    const { conversationId, payloadEncrypted, iv, authTag, fingerprintHash, mediaType, mimeType } = req.body;
+    const { conversationId, payloadEncrypted, iv, authTag, fingerprintHash, mediaType, mimeType, mediaId: existingMediaId } = req.body;
     if (!conversationId || !payloadEncrypted || !iv || !authTag) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
@@ -57,7 +57,7 @@ router.post('/send', async (req, res) => {
     const txHash = await blockchain.logMessageHash(id.replace(/-/g, ''), msgHash);
     db.prepare(`
       INSERT INTO messages (id, conversation_id, sender_id, payload_encrypted, iv, auth_tag, blockchain_tx)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?)
     `).run(
       id, conversationId, req.userId,
       Buffer.from(payloadEncrypted, 'base64'),
@@ -65,8 +65,10 @@ router.post('/send', async (req, res) => {
       Buffer.from(authTag, 'base64'),
       txHash
     );
-    let mediaId = null;
-    if (fingerprintHash && (mediaType === 'image' || mediaType === 'file')) {
+    let mediaId = existingMediaId || null;
+    if (existingMediaId) {
+      db.prepare('UPDATE media SET message_id = ? WHERE id = ? AND owner_id = ?').run(id, existingMediaId, req.userId);
+    } else if (fingerprintHash && (mediaType === 'image' || mediaType === 'file')) {
       mediaId = uuidv4();
       const fpTx = await blockchain.registerFingerprint(fingerprintHash, '');
       db.prepare(`

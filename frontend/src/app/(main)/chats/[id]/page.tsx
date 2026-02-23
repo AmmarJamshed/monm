@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { messages as msgApi, conversations, media as mediaApi } from '@/lib/api';
-import { encrypt, decrypt, deriveConversationKey, sha256Hash } from '@/lib/crypto';
+import { encrypt, decrypt, deriveConversationKey } from '@/lib/crypto';
 import { createWS } from '@/lib/ws';
 import MessageBubble from '@/components/MessageBubble';
 
@@ -15,6 +15,7 @@ type Message = {
   auth_tag: string;
   created_at: string;
   decrypted?: string;
+  mediaRef?: string;
   mediaType?: 'image' | 'file';
   mime?: string;
   media_id?: string | null;
@@ -34,6 +35,7 @@ export default function ChatPage() {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [convList, setConvList] = useState<Array<{ id: string; type: string; participants: { id: string; name: string }[] }>>([]);
+  const [otherParticipant, setOtherParticipant] = useState<{ id: string; name: string } | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
   const convKeyRef = useRef<CryptoKey | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -56,6 +58,8 @@ export default function ChatPage() {
         const [list, convs] = await Promise.all([msgApi.list(id), conversations.list()]);
         setConvList(convs);
         const conv = convs.find(c => c.id === id);
+        const other = conv?.participants?.find((p: { id: string }) => p.id !== user.id);
+        setOtherParticipant(other ? { id: other.id, name: other.name } : null);
         const participantIds = conv?.participants
           ? Array.from(new Set([...conv.participants.map((p: { id: string }) => p.id), user.id]))
           : [user.id];
@@ -66,17 +70,19 @@ export default function ChatPage() {
           list.map(async m => {
             try {
               const raw = await decrypt(m.payload_encrypted, m.iv, m.auth_tag, key);
-              let parsed: { t?: string; d?: string; m?: string };
+              let parsed: { t?: string; d?: string; m?: string; media_id?: string };
               try {
                 parsed = JSON.parse(raw);
               } catch {
                 return { ...m, decrypted: raw, mediaType: undefined };
               }
-              if (parsed.t === 'image' && parsed.d) {
-                return { ...m, decrypted: parsed.d, mediaType: 'image' as const, mime: parsed.m || 'image/jpeg', media_id: m.media_id, fingerprint_hash: m.fingerprint_hash, kill_switch_active: m.kill_switch_active };
+              if (parsed.t === 'image') {
+                const base = { ...m, mediaType: 'image' as const, mime: parsed.m || 'image/jpeg', media_id: parsed.media_id || m.media_id, fingerprint_hash: m.fingerprint_hash, kill_switch_active: m.kill_switch_active };
+                return parsed.d ? { ...base, decrypted: parsed.d } : { ...base, decrypted: undefined, mediaRef: parsed.media_id };
               }
-              if (parsed.t === 'file' && parsed.d) {
-                return { ...m, decrypted: parsed.d, mediaType: 'file' as const, mime: parsed.m, media_id: m.media_id, fingerprint_hash: m.fingerprint_hash, kill_switch_active: m.kill_switch_active };
+              if (parsed.t === 'file') {
+                const base = { ...m, mediaType: 'file' as const, mime: parsed.m, media_id: parsed.media_id || m.media_id, fingerprint_hash: m.fingerprint_hash, kill_switch_active: m.kill_switch_active };
+                return parsed.d ? { ...base, decrypted: parsed.d } : { ...base, decrypted: undefined, mediaRef: parsed.media_id };
               }
               return { ...m, decrypted: parsed.d ?? raw, mediaType: undefined };
             } catch {
@@ -102,7 +108,7 @@ export default function ChatPage() {
         const m = data.message;
         try {
           const raw = await decrypt(m.payload_encrypted, m.iv, m.auth_tag, key);
-          let parsed: { t?: string; d?: string; m?: string };
+          let parsed: { t?: string; d?: string; m?: string; media_id?: string };
           try {
             parsed = JSON.parse(raw);
           } catch {
@@ -112,11 +118,16 @@ export default function ChatPage() {
             });
             return;
           }
-          const msg = parsed.t === 'image' && parsed.d
-            ? { ...m, decrypted: parsed.d, mediaType: 'image' as const, mime: parsed.m || 'image/jpeg', media_id: m.media_id, fingerprint_hash: m.fingerprint_hash, kill_switch_active: m.kill_switch_active }
-            : parsed.t === 'file' && parsed.d
-              ? { ...m, decrypted: parsed.d, mediaType: 'file' as const, mime: parsed.m, media_id: m.media_id, fingerprint_hash: m.fingerprint_hash, kill_switch_active: m.kill_switch_active }
-              : { ...m, decrypted: parsed.d ?? raw };
+          let msg: Message;
+          if (parsed.t === 'image') {
+            const base = { ...m, mediaType: 'image' as const, mime: parsed.m || 'image/jpeg', media_id: parsed.media_id || m.media_id, fingerprint_hash: m.fingerprint_hash, kill_switch_active: m.kill_switch_active };
+            msg = parsed.d ? { ...base, decrypted: parsed.d } : { ...base, decrypted: undefined, mediaRef: parsed.media_id };
+          } else if (parsed.t === 'file') {
+            const base = { ...m, mediaType: 'file' as const, mime: parsed.m, media_id: parsed.media_id || m.media_id, fingerprint_hash: m.fingerprint_hash, kill_switch_active: m.kill_switch_active };
+            msg = parsed.d ? { ...base, decrypted: parsed.d } : { ...base, decrypted: undefined, mediaRef: parsed.media_id };
+          } else {
+            msg = { ...m, decrypted: parsed.d ?? raw };
+          }
           setMsgs(prev => {
             setNewMsgIds(prevIds => new Set(Array.from(prevIds).concat(m.id)));
             return [...prev, msg];
@@ -155,51 +166,26 @@ export default function ChatPage() {
 
   const sendMedia = async (file: File) => {
     if (!userId || !convKey || sending) return;
-    if (file.size > 10 * 1024 * 1024) { alert('File too large (max 10MB)'); return; }
+    if (file.size > 24 * 1024 * 1024) { alert('File too large (max 24MB)'); return; }
     setSending(true);
     try {
-      let base64: string;
-      if (file.type.startsWith('image/')) {
-        base64 = await new Promise<string>((resolve, reject) => {
-          const img = new Image();
-          img.onload = () => {
-            const c = document.createElement('canvas');
-            const MAX = 1200;
-            let w = img.width, h = img.height;
-            if (w > MAX || h > MAX) {
-              if (w > h) { h = (h * MAX) / w; w = MAX; } else { w = (w * MAX) / h; h = MAX; }
-            }
-            c.width = w; c.height = h;
-            c.getContext('2d')!.drawImage(img, 0, 0, w, h);
-            resolve(c.toDataURL(file.type, 0.85).split(',')[1] || '');
-          };
-          img.onerror = reject;
-          img.src = URL.createObjectURL(file);
-        });
-      } else {
-        base64 = await new Promise<string>((resolve, reject) => {
-          const r = new FileReader();
-          r.onload = () => resolve((r.result as string).split(',')[1] || '');
-          r.onerror = reject;
-          r.readAsDataURL(file);
-        });
-      }
-      const mediaType = file.type.startsWith('image/') ? 'image' : 'file';
-      const fingerprintHash = await sha256Hash(base64);
-      const payload = JSON.stringify({ t: mediaType, d: base64, m: file.type });
+      const { media_id, fingerprint_hash, mime_type, media_type } = await mediaApi.upload(id, file);
+      const payload = JSON.stringify({ t: media_type as 'image' | 'file', media_id, m: mime_type });
       const { ciphertext, iv, authTag } = await encrypt(payload, convKey);
       const m = await msgApi.send(id, ciphertext, iv, authTag, {
-        fingerprintHash,
-        mediaType,
-        mimeType: file.type,
+        mediaId: media_id,
+        mediaType: media_type,
+        mimeType: mime_type,
       });
       const newM: Message = {
         ...m,
-        decrypted: base64,
-        mediaType: mediaType as 'image' | 'file',
-        mime: file.type,
+        decrypted: undefined,
+        mediaRef: media_id,
+        mediaType: media_type as 'image' | 'file',
+        mime: mime_type,
         sender_id: userId,
-        fingerprint_hash: fingerprintHash,
+        media_id,
+        fingerprint_hash,
         kill_switch_active: false,
       };
       setMsgs(prev => [...prev, newM]);
@@ -247,15 +233,25 @@ export default function ChatPage() {
 
   return (
     <div className="flex-1 flex flex-col min-h-0">
-      <header className="px-4 py-3 flex items-center gap-3 border-b border-slate-200 shrink-0">
+      <header className="px-4 py-3 flex items-center gap-2 border-b border-slate-200 shrink-0">
         <button onClick={() => router.back()} className="p-2 -ml-2 rounded-lg hover:bg-slate-100 text-slate-600 font-bold">←</button>
-        <h1 className="flex-1 font-semibold text-slate-800">Chat</h1>
+        <h1 className="flex-1 font-semibold text-slate-800 truncate">{otherParticipant?.name ?? 'Chat'}</h1>
+        {otherParticipant && (
+          <>
+            <button onClick={() => router.push(`/call?with=${otherParticipant.id}`)} className="p-2 rounded-lg hover:bg-slate-100 text-slate-600" title="Voice call" aria-label="Voice call">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+            </button>
+            <button onClick={() => router.push(`/video?with=${otherParticipant.id}`)} className="p-2 rounded-lg hover:bg-slate-100 text-slate-600" title="Video call" aria-label="Video call">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+            </button>
+          </>
+        )}
       </header>
       <main className="flex-1 overflow-auto p-4 space-y-3 bg-slate-50">
         {msgs.map(m => (
           <MessageBubble
             key={m.id}
-            text={m.decrypted ?? '[Encrypted]'}
+            text={m.decrypted}
             isMe={m.sender_id === userId}
             label={m.sender_id === userId ? 'You' : 'Them'}
             time={new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -264,6 +260,7 @@ export default function ChatPage() {
             mime={m.mime}
             messageId={m.id}
             mediaId={m.media_id ?? undefined}
+            mediaRef={m.mediaRef}
             isKilled={m.kill_switch_active === true}
             onForward={handleForward}
           />

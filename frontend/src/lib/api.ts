@@ -99,7 +99,7 @@ export const messages = {
     payloadEncrypted: string,
     iv: string,
     authTag: string,
-    opts?: { fingerprintHash?: string; mediaType?: 'image' | 'file'; mimeType?: string }
+    opts?: { fingerprintHash?: string; mediaType?: 'image' | 'file'; mimeType?: string; mediaId?: string }
   ) =>
     api<{
       id: string;
@@ -119,11 +119,33 @@ export const messages = {
         ...(opts?.fingerprintHash && { fingerprintHash: opts.fingerprintHash }),
         ...(opts?.mediaType && { mediaType: opts.mediaType }),
         ...(opts?.mimeType && { mimeType: opts.mimeType }),
+        ...(opts?.mediaId && { mediaId: opts.mediaId }),
       }),
     }),
 };
 
 export const media = {
+  upload: async (conversationId: string, file: File): Promise<{ media_id: string; fingerprint_hash: string; mime_type: string; media_type: 'image' | 'file' }> => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('monm_token') : null;
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('conversationId', conversationId);
+    const res = await fetch(`${API}/api/media/upload`, {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      credentials: 'include',
+      body: formData,
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error((err as { error?: string }).error || res.statusText);
+    }
+    return res.json();
+  },
+  blobUrl: (mediaId: string): string => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('monm_token') : null;
+    return `${API}/api/media/${mediaId}/blob${token ? `?token=${encodeURIComponent(token)}` : ''}`;
+  },
   killedFingerprints: () => api<string[]>('/api/media/killed-fingerprints'),
   canForward: (messageId: string) => api<{ allowed: boolean }>(`/api/media/can-forward/${messageId}`),
   canDownload: (mediaId: string) => api<{ allowed: boolean }>(`/api/media/can-download/${mediaId}`),
