@@ -8,6 +8,14 @@ const servers: RTCConfiguration = { iceServers: [{ urls: 'stun:stun.l.google.com
 
 type CallData = { type: string; from?: string; to?: string; fromName?: string; offer?: RTCSessionDescriptionInit; answer?: RTCSessionDescriptionInit; candidate?: RTCIceCandidateInit; isVideo?: boolean };
 
+function getMediaStream(audio: boolean, video: boolean): Promise<MediaStream> {
+  const constraints: MediaStreamConstraints = {
+    audio: audio ? { echoCancellation: true, noiseSuppression: true } : false,
+    video: video ? { width: { ideal: 640 }, height: { ideal: 480 } } : false,
+  };
+  return navigator.mediaDevices.getUserMedia(constraints);
+}
+
 export function useCall(userId: string | null, wsSend: (m: Record<string, unknown>) => void, wsSubscribe: (h: (d: Record<string, unknown>) => void) => () => void) {
   const [callState, setCallState] = useState<'idle' | 'incoming' | 'outgoing' | 'active'>('idle');
   const [peerName, setPeerName] = useState('');
@@ -16,6 +24,7 @@ export function useCall(userId: string | null, wsSend: (m: Record<string, unknow
   const pendingOfferRef = useRef<{ offer: RTCSessionDescriptionInit; fromId: string; fromName: string; isVideo: boolean } | null>(null);
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
+  const requestingMediaRef = useRef(false);
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
 
@@ -25,6 +34,7 @@ export function useCall(userId: string | null, wsSend: (m: Record<string, unknow
     localStreamRef.current?.getTracks().forEach((t) => t.stop());
     localStreamRef.current = null;
     pendingOfferRef.current = null;
+    requestingMediaRef.current = false;
     setLocalStream(null);
     setRemoteStream(null);
     setCallState('idle');
@@ -66,8 +76,10 @@ export function useCall(userId: string | null, wsSend: (m: Record<string, unknow
   const startCall = useCallback(
     async (targetId: string, targetName: string, video: boolean) => {
       if (!userId) return;
+      if (requestingMediaRef.current) return;
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video });
+        requestingMediaRef.current = true;
+        const stream = await getMediaStream(true, video);
         localStreamRef.current = stream;
         setLocalStream(stream);
         setPeerId(targetId);
@@ -89,6 +101,8 @@ export function useCall(userId: string | null, wsSend: (m: Record<string, unknow
       } catch (e) {
         alert((e as Error).message || 'Could not start call');
         cleanup();
+      } finally {
+        requestingMediaRef.current = false;
       }
     },
     [userId, wsSend, cleanup]
@@ -97,8 +111,10 @@ export function useCall(userId: string | null, wsSend: (m: Record<string, unknow
   const acceptCall = useCallback(
     async (fromId: string, fromName: string, video: boolean, offer?: RTCSessionDescriptionInit) => {
       if (!userId || !offer) return;
+      if (requestingMediaRef.current) return;
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video });
+        requestingMediaRef.current = true;
+        const stream = await getMediaStream(true, video);
         localStreamRef.current = stream;
         setLocalStream(stream);
         setPeerId(fromId);
@@ -122,6 +138,8 @@ export function useCall(userId: string | null, wsSend: (m: Record<string, unknow
         alert((e as Error).message || 'Could not accept call');
         wsSend({ type: 'call_reject', to: fromId });
         cleanup();
+      } finally {
+        requestingMediaRef.current = false;
       }
     },
     [userId, wsSend, cleanup]

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useRef } from 'react';
 
 type Props = {
   mode: 'incoming' | 'outgoing' | 'active';
@@ -16,13 +16,25 @@ type Props = {
 export default function CallModal({ mode, peerName, isVideo, onClose, onAccept, onReject, localStream, remoteStream }: Props) {
   const localRef = useRef<HTMLVideoElement>(null);
   const remoteRef = useRef<HTMLVideoElement>(null);
+  const remoteAudioRef = useRef<HTMLAudioElement>(null);
 
-  useEffect(() => {
-    if (localStream && localRef.current) localRef.current.srcObject = localStream;
-  }, [localStream]);
-  useEffect(() => {
-    if (remoteStream && remoteRef.current) remoteRef.current.srcObject = remoteStream;
-  }, [remoteStream]);
+  // Bind streams when elements exist - useLayoutEffect ensures refs are set before paint
+  useLayoutEffect(() => {
+    if (localStream && localRef.current) {
+      localRef.current.srcObject = localStream;
+    }
+  }, [localStream, mode, isVideo]);
+  useLayoutEffect(() => {
+    if (remoteStream && remoteRef.current) {
+      remoteRef.current.srcObject = remoteStream;
+    }
+  }, [remoteStream, mode, isVideo]);
+  // Voice calls: play remote audio via hidden audio element
+  useLayoutEffect(() => {
+    if (remoteStream && remoteAudioRef.current) {
+      remoteAudioRef.current.srcObject = remoteStream;
+    }
+  }, [remoteStream, mode, isVideo]);
 
   return (
     <div className="fixed inset-0 z-[100] flex flex-col bg-slate-900 text-white">
@@ -46,6 +58,7 @@ export default function CallModal({ mode, peerName, isVideo, onClose, onAccept, 
           </>
         ) : mode === 'active' ? (
           <div className="flex flex-col items-center gap-4">
+            <audio ref={remoteAudioRef} autoPlay playsInline className="hidden" />
             <div className="w-24 h-24 rounded-full bg-slate-700 flex items-center justify-center text-3xl font-bold">{peerName[0]}</div>
             <p className="text-slate-300">Voice call in progress</p>
           </div>
