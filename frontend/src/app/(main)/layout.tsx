@@ -3,6 +3,9 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import AppShell from '@/components/AppShell';
+import { WebSocketProvider } from '@/contexts/WebSocketContext';
+import { CallProvider } from '@/contexts/CallContext';
+import NotificationPrompt from '@/components/NotificationPrompt';
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -26,5 +29,14 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     );
   }
 
-  return <AppShell>{children}</AppShell>;
+  return (
+    <WebSocketProvider>
+      <CallProvider>
+        <AppShell>
+          {children}
+        </AppShell>
+        <NotificationPrompt />
+      </CallProvider>
+    </WebSocketProvider>
+  );
 }

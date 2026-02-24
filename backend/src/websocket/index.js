@@ -43,6 +43,23 @@ function handleMessage(userId, ws, data) {
       broadcastToConversation(msg.conversationId, userId, { type: 'typing', userId, conversationId: msg.conversationId });
       return;
     }
+    if (msg.type === 'call_request') {
+      const { to, fromName, conversationId, isVideo, offer } = msg;
+      if (to && to !== userId) {
+        broadcastToUser(to, { type: 'call_request', from: userId, fromName: fromName || 'Someone', to, conversationId, isVideo, offer });
+      }
+      return;
+    }
+    if (msg.type === 'call_answer' || msg.type === 'call_reject' || msg.type === 'call_hangup') {
+      const { to, answer } = msg;
+      if (to) broadcastToUser(to, { ...msg, from: userId });
+      return;
+    }
+    if (msg.type === 'ice_candidate') {
+      const { to, candidate } = msg;
+      if (to) broadcastToUser(to, { type: 'ice_candidate', from: userId, candidate });
+      return;
+    }
   } catch {}
 }
 

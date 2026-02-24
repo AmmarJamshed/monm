@@ -37,6 +37,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const [userName, setUserName] = useState<string>('—');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     try {
@@ -47,17 +48,52 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [pathname]);
+
   const handleLogout = () => {
     localStorage.removeItem('monm_token');
     localStorage.removeItem('monm_user');
     router.replace('/');
   };
 
+  const navBtn = (item: NavItem) => {
+    const active = pathname === item.href || (item.href !== '/chats' && pathname.startsWith(item.href)) || (item.href === '/chats' && (pathname === '/chats' || pathname.startsWith('/chats/')));
+    return (
+      <button
+        key={item.href}
+        onClick={() => router.push(item.href)}
+        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left text-sm font-medium transition-colors ${active ? 'inbox-selected' : ''}`}
+        style={active ? { backgroundColor: 'var(--inbox-blue-bg)', color: 'var(--inbox-blue)' } : { color: 'var(--inbox-text-muted)' }}
+      >
+        {item.icon}
+        {item.label}
+      </button>
+    );
+  };
+
   return (
-    <div className="flex min-h-screen" style={{ backgroundColor: 'var(--inbox-bg-secondary)' }}>
-      {/* Sidebar - inbox template exact */}
-      <aside className="w-64 shrink-0 inbox-sidebar flex flex-col">
-        <div className="p-4 border-b border-slate-200">
+    <div className="flex min-h-screen min-h-[100dvh] overflow-x-hidden" style={{ backgroundColor: 'var(--inbox-bg-secondary)' }}>
+      {/* Mobile: Top bar with hamburger */}
+      <header className="md:hidden fixed top-0 left-0 right-0 z-40 flex items-center gap-3 px-3 py-2 pt-safe bg-white border-b border-slate-200">
+        <button onClick={() => setSidebarOpen(true)} className="p-2 -ml-1 rounded-lg hover:bg-slate-100" aria-label="Open menu">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+        <span className="font-semibold text-slate-800">MonM</span>
+      </header>
+      {sidebarOpen && (
+        <div className="md:hidden fixed inset-0 z-50 bg-black/40" onClick={() => setSidebarOpen(false)} aria-hidden />
+      )}
+      <aside
+        className={`inbox-sidebar flex flex-col transition-transform duration-200 ease-out z-50
+          w-64 shrink-0
+          md:relative md:translate-x-0
+          fixed inset-y-0 left-0
+          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
+        <div className="p-4 border-b border-slate-200 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-lg" style={{ backgroundColor: 'var(--inbox-blue)' }}>
               M
@@ -67,24 +103,12 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               <p className="text-xs truncate max-w-[140px]" style={{ color: 'var(--inbox-text-muted)' }}>{userName}</p>
             </div>
           </div>
+          <button onClick={() => setSidebarOpen(false)} className="md:hidden p-2 rounded-lg hover:bg-slate-100" aria-label="Close menu">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
         </div>
         <nav className="flex-1 p-2">
-          {navItems.map(({ href, label, icon }) => {
-            const active = pathname === href || (href !== '/chats' && pathname.startsWith(href)) || (href === '/chats' && (pathname === '/chats' || pathname.startsWith('/chats/')));
-            return (
-              <button
-                key={href}
-                onClick={() => router.push(href)}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left text-sm font-medium transition-colors ${
-                  active ? 'inbox-selected' : ''
-                }`}
-                style={active ? { backgroundColor: 'var(--inbox-blue-bg)', color: 'var(--inbox-blue)' } : { color: 'var(--inbox-text-muted)' }}
-              >
-                {icon}
-                {label}
-              </button>
-            );
-          })}
+          {navItems.map(navBtn)}
         </nav>
         <div className="p-2 border-t border-slate-200">
           <button
@@ -99,7 +123,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           </button>
         </div>
       </aside>
-      <main className="flex-1 min-w-0 flex flex-col inbox-main">
+      <main className="flex-1 min-w-0 flex flex-col inbox-main md:ml-0 pt-12 md:pt-0">
         {children}
       </main>
     </div>

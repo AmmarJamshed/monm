@@ -45,6 +45,12 @@ body {
 
 html { overscroll-behavior-y: contain; }
 
+/* Mobile safe areas */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+  .pt-safe { padding-top: env(safe-area-inset-top); }
+}
+
 /* Inbox-style: flat white/grey, no gradients */
 .bg-ar-mesh {
   background: var(--inbox-bg-secondary);
