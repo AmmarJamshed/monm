@@ -57,7 +57,7 @@ router.post('/send', async (req, res) => {
     const txHash = await blockchain.logMessageHash(id.replace(/-/g, ''), msgHash);
     db.prepare(`
       INSERT INTO messages (id, conversation_id, sender_id, payload_encrypted, iv, auth_tag, blockchain_tx)
-      VALUES (?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
     `).run(
       id, conversationId, req.userId,
       Buffer.from(payloadEncrypted, 'base64'),
