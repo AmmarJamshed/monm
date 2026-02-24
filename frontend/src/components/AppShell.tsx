@@ -36,15 +36,15 @@ function VideoIcon() {
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [userName, setUserName] = useState<string>('—');
+  const [userName, setUserName] = useState<string>('-');
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     try {
       const u = localStorage.getItem('monm_user');
-      setUserName(u ? JSON.parse(u).name : '—');
+      setUserName(u ? JSON.parse(u).name : '-');
     } catch {
-      setUserName('—');
+      setUserName('-');
     }
   }, []);
 
@@ -52,29 +52,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     setSidebarOpen(false);
   }, [pathname]);
 
-  const handleLogout = () => {
+  const handleLogout = (): void => {
     localStorage.removeItem('monm_token');
     localStorage.removeItem('monm_user');
     router.replace('/');
   };
 
-  const navBtn = (item: NavItem) => {
-    const active = pathname === item.href || (item.href !== '/chats' && pathname.startsWith(item.href)) || (item.href === '/chats' && (pathname === '/chats' || pathname.startsWith('/chats/')));
-    return (
-      <button
-        key={item.href}
-        onClick={() => router.push(item.href)}
-        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left text-sm font-medium transition-colors ${active ? 'inbox-selected' : ''}`}
-        style={active ? { backgroundColor: 'var(--inbox-blue-bg)', color: 'var(--inbox-blue)' } : { color: 'var(--inbox-text-muted)' }}
-      >
-        {item.icon}
-        {item.label}
-      </button>
-    );
-  };
-
   return (
-    <div className="flex min-h-screen min-h-[100dvh] overflow-x-hidden" style={{ backgroundColor: 'var(--inbox-bg-secondary)' }}>
+    <div className="flex min-h-screen overflow-x-hidden" style={{ backgroundColor: 'var(--inbox-bg-secondary)' }}>
       {/* Mobile: Top bar with hamburger */}
       <header className="md:hidden fixed top-0 left-0 right-0 z-40 flex items-center gap-3 px-3 py-2 pt-safe bg-white border-b border-slate-200">
         <button onClick={() => setSidebarOpen(true)} className="p-2 -ml-1 rounded-lg hover:bg-slate-100" aria-label="Open menu">
@@ -93,6 +78,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           md:relative md:translate-x-0
           fixed inset-y-0 left-0
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
+      >
         <div className="p-4 border-b border-slate-200 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-lg" style={{ backgroundColor: 'var(--inbox-blue)' }}>
@@ -108,7 +94,20 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           </button>
         </div>
         <nav className="flex-1 p-2">
-          {navItems.map(navBtn)}
+          {navItems.map((item) => {
+            const active = pathname === item.href || (item.href !== '/chats' && pathname.startsWith(item.href)) || (item.href === '/chats' && (pathname === '/chats' || pathname.startsWith('/chats/')));
+            return (
+              <button
+                key={item.href}
+                onClick={() => router.push(item.href)}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left text-sm font-medium transition-colors ${active ? 'inbox-selected' : ''}`}
+                style={active ? { backgroundColor: 'var(--inbox-blue-bg)', color: 'var(--inbox-blue)' } : { color: 'var(--inbox-text-muted)' }}
+              >
+                {item.icon}
+                {item.label}
+              </button>
+            );
+          })}
         </nav>
         <div className="p-2 border-t border-slate-200">
           <button

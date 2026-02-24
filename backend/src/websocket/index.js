@@ -65,7 +65,12 @@ function handleMessage(userId, ws, data) {
 
 export function broadcastToUser(userId, payload) {
   const set = connections.get(userId);
-  if (!set) return;
+  if (!set || set.size === 0) {
+    if (payload?.type === 'call_request') {
+      console.warn(`[WS] call_request to ${userId} failed: user not connected (${connections.size} users online)`);
+    }
+    return;
+  }
   const str = typeof payload === 'string' ? payload : JSON.stringify(payload);
   set.forEach(ws => { if (ws.readyState === 1) ws.send(str); });
 }

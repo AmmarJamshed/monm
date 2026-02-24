@@ -12,26 +12,78 @@ const WebSocketContext = createContext<{
   subscribe: (handler: MessageHandler) => () => void;
 }>({ ws: null, send: () => {}, subscribe: () => () => {} });
 
+const PING_INTERVAL_MS = 25000; // Keep connection alive (many proxies timeout at 30–60s)
+const RECONNECT_DELAYS = [500, 1500, 3000, 5000, 10000]; // Exponential backoff
+
 export function WebSocketProvider({ children }: { children: React.ReactNode }) {
   const [ws, setWs] = useState<WebSocket | null>(null);
   const handlersRef = useRef<Set<MessageHandler>>(new Set());
   const wsRef = useRef<WebSocket | null>(null);
+  const pingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const reconnectAttemptRef = useRef(0);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
 
   useEffect(() => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('monm_token') : null;
     if (!token) return;
-    const socket = createWS(token);
-    wsRef.current = socket;
-    socket.onopen = () => setWs(socket);
-    socket.onclose = () => setWs(null);
-    socket.onmessage = (e) => {
-      try {
-        const data = JSON.parse(e.data) as WSMessage;
-        handlersRef.current.forEach((h) => h(data));
-      } catch {}
+
+    let socket: WebSocket;
+    let reconnectTimeout: ReturnType<typeof setTimeout>;
+
+    const clearPing = () => {
+      if (pingIntervalRef.current) {
+        clearInterval(pingIntervalRef.current);
+        pingIntervalRef.current = null;
+      }
     };
+
+    const connect = () => {
+      socket = createWS(token);
+      wsRef.current = socket;
+
+      socket.onopen = () => {
+        if (!mountedRef.current) return;
+        reconnectAttemptRef.current = 0;
+        setWs(socket);
+        clearPing();
+        pingIntervalRef.current = setInterval(() => {
+          if (wsRef.current?.readyState === WebSocket.OPEN) {
+            wsRef.current.send(JSON.stringify({ type: 'ping' }));
+          }
+        }, PING_INTERVAL_MS);
+      };
+
+      socket.onclose = () => {
+        wsRef.current = null;
+        setWs(null);
+        clearPing();
+        if (!mountedRef.current) return;
+        const delay = RECONNECT_DELAYS[Math.min(reconnectAttemptRef.current, RECONNECT_DELAYS.length - 1)];
+        reconnectAttemptRef.current += 1;
+        reconnectTimeout = setTimeout(connect, delay);
+      };
+
+      socket.onmessage = (e) => {
+        try {
+          const data = JSON.parse(e.data) as WSMessage;
+          handlersRef.current.forEach((h) => h(data));
+        } catch {}
+      };
+
+      socket.onerror = () => {}; // Close will fire after error
+    };
+
+    connect();
+
     return () => {
-      socket.close();
+      clearTimeout(reconnectTimeout);
+      clearPing();
+      socket?.close();
       wsRef.current = null;
       setWs(null);
     };

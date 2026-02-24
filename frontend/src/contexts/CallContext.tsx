@@ -10,8 +10,18 @@ type CallContextValue = {
 
 const CallContext = createContext<CallContextValue | null>(null);
 
+function getInitialUserId(): string | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const u = localStorage.getItem('monm_user');
+    return u ? JSON.parse(u).id : null;
+  } catch {
+    return null;
+  }
+}
+
 export function CallProvider({ children }: { children: React.ReactNode }) {
-  const [userId, setUserId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(getInitialUserId);
   const { subscribe, send: wsSend } = useWebSocket();
   const { startCall, CallModalComponent } = useCall(userId, wsSend, subscribe);
 

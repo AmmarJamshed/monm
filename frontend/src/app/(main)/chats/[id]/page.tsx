@@ -108,7 +108,7 @@ export default function ChatPage() {
       if ((data as { type?: string; conversationId?: string }).type !== 'new_message' || (data as { conversationId?: string }).conversationId !== id) return;
       const key = convKeyRef.current;
       if (!key) return;
-      const m = (data as { message: Message }).message;
+      const m = (data as unknown as { message: Message }).message;
       const senderName = participantsRef.current.get(m.sender_id) ?? 'Someone';
       try {
         const raw = await decrypt(m.payload_encrypted, m.iv, m.auth_tag, key);
@@ -120,7 +120,7 @@ export default function ChatPage() {
             setNewMsgIds(prevIds => new Set(Array.from(prevIds).concat(m.id)));
             return [...prev, { ...m, decrypted: raw }];
           });
-          if (typeof document !== 'undefined' && document.hidden) showMessageNotification(senderName, parsed.d ? '[Media]' : raw?.slice?.(0, 50) || 'New message');
+          if (typeof document !== 'undefined' && document.hidden) showMessageNotification(senderName, raw?.slice?.(0, 50) || 'New message');
           return;
         }
         let msg: Message;
