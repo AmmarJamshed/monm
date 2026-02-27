@@ -6,6 +6,7 @@ import AppShell from '@/components/AppShell';
 import { WebSocketProvider } from '@/contexts/WebSocketContext';
 import { CallProvider } from '@/contexts/CallContext';
 import NotificationPrompt from '@/components/NotificationPrompt';
+import PermissionsOnboarding from '@/components/PermissionsOnboarding';
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -36,6 +37,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
           {children}
         </AppShell>
         <NotificationPrompt />
+        <PermissionsOnboarding />
       </CallProvider>
     </WebSocketProvider>
   );
