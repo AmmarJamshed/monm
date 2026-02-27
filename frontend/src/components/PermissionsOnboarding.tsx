@@ -62,7 +62,7 @@ export default function PermissionsOnboarding() {
               </div>
             </button>
           )}
-          {typeof navigator !== 'undefined' && navigator.mediaDevices?.getUserMedia && (
+          {typeof navigator !== 'undefined' && !!navigator.mediaDevices && (
             <button
               onClick={handleCameraMic}
               disabled={preparingMedia}
