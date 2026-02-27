@@ -23,6 +23,7 @@ type Message = {
   media_id?: string | null;
   fingerprint_hash?: string | null;
   kill_switch_active?: boolean;
+  wrap?: boolean;
 };
 
 export default function ChatPage() {
@@ -44,6 +45,7 @@ export default function ChatPage() {
   const { startCall } = useCallContext();
   const bottomRef = useRef<HTMLDivElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
+  const [secureWrapMode, setSecureWrapMode] = useState(false);
 
   convKeyRef.current = convKey;
 
@@ -75,18 +77,18 @@ export default function ChatPage() {
           list.map(async m => {
             try {
               const raw = await decrypt(m.payload_encrypted, m.iv, m.auth_tag, key);
-              let parsed: { t?: string; d?: string; m?: string; media_id?: string };
+              let parsed: { t?: string; d?: string; m?: string; media_id?: string; wrap?: boolean };
               try {
                 parsed = JSON.parse(raw);
               } catch {
                 return { ...m, decrypted: raw, mediaType: undefined };
               }
               if (parsed.t === 'image') {
-                const base = { ...m, mediaType: 'image' as const, mime: parsed.m || 'image/jpeg', media_id: parsed.media_id || m.media_id, fingerprint_hash: m.fingerprint_hash, kill_switch_active: m.kill_switch_active };
+                const base = { ...m, mediaType: 'image' as const, mime: parsed.m || 'image/jpeg', media_id: parsed.media_id || m.media_id, fingerprint_hash: m.fingerprint_hash, kill_switch_active: m.kill_switch_active, wrap: !!parsed.wrap };
                 return parsed.d ? { ...base, decrypted: parsed.d } : { ...base, decrypted: undefined, mediaRef: parsed.media_id };
               }
               if (parsed.t === 'file') {
-                const base = { ...m, mediaType: 'file' as const, mime: parsed.m, media_id: parsed.media_id || m.media_id, fingerprint_hash: m.fingerprint_hash, kill_switch_active: m.kill_switch_active };
+                const base = { ...m, mediaType: 'file' as const, mime: parsed.m, media_id: parsed.media_id || m.media_id, fingerprint_hash: m.fingerprint_hash, kill_switch_active: m.kill_switch_active, wrap: !!parsed.wrap };
                 return parsed.d ? { ...base, decrypted: parsed.d } : { ...base, decrypted: undefined, mediaRef: parsed.media_id };
               }
               return { ...m, decrypted: parsed.d ?? raw, mediaType: undefined };
@@ -112,7 +114,7 @@ export default function ChatPage() {
       const senderName = participantsRef.current.get(m.sender_id) ?? 'Someone';
       try {
         const raw = await decrypt(m.payload_encrypted, m.iv, m.auth_tag, key);
-        let parsed: { t?: string; d?: string; m?: string; media_id?: string };
+        let parsed: { t?: string; d?: string; m?: string; media_id?: string; wrap?: boolean };
         try {
           parsed = JSON.parse(raw);
         } catch {
@@ -125,10 +127,10 @@ export default function ChatPage() {
         }
         let msg: Message;
         if (parsed.t === 'image') {
-          const base = { ...m, mediaType: 'image' as const, mime: parsed.m || 'image/jpeg', media_id: parsed.media_id || m.media_id, fingerprint_hash: m.fingerprint_hash, kill_switch_active: m.kill_switch_active };
+          const base = { ...m, mediaType: 'image' as const, mime: parsed.m || 'image/jpeg', media_id: parsed.media_id || m.media_id, fingerprint_hash: m.fingerprint_hash, kill_switch_active: m.kill_switch_active, wrap: !!parsed.wrap };
           msg = parsed.d ? { ...base, decrypted: parsed.d } : { ...base, decrypted: undefined, mediaRef: parsed.media_id };
         } else if (parsed.t === 'file') {
-          const base = { ...m, mediaType: 'file' as const, mime: parsed.m, media_id: parsed.media_id || m.media_id, fingerprint_hash: m.fingerprint_hash, kill_switch_active: m.kill_switch_active };
+          const base = { ...m, mediaType: 'file' as const, mime: parsed.m, media_id: parsed.media_id || m.media_id, fingerprint_hash: m.fingerprint_hash, kill_switch_active: m.kill_switch_active, wrap: !!parsed.wrap };
           msg = parsed.d ? { ...base, decrypted: parsed.d } : { ...base, decrypted: undefined, mediaRef: parsed.media_id };
         } else {
           msg = { ...m, decrypted: parsed.d ?? raw };
@@ -174,7 +176,7 @@ export default function ChatPage() {
     setSending(true);
     try {
       const { media_id, fingerprint_hash, mime_type, media_type } = await mediaApi.upload(id, file);
-      const payload = JSON.stringify({ t: media_type as 'image' | 'file', media_id, m: mime_type });
+      const payload = JSON.stringify({ t: media_type as 'image' | 'file', media_id, m: mime_type, wrap: secureWrapMode });
       const { ciphertext, iv, authTag } = await encrypt(payload, convKey);
       const m = await msgApi.send(id, ciphertext, iv, authTag, {
         mediaId: media_id,
@@ -191,6 +193,7 @@ export default function ChatPage() {
         media_id,
         fingerprint_hash,
         kill_switch_active: false,
+        wrap: secureWrapMode,
       };
       setMsgs(prev => [...prev, newM]);
       setNewMsgIds(prev => new Set(Array.from(prev).concat(m.id)));
@@ -266,6 +269,7 @@ export default function ChatPage() {
             mediaId={m.media_id ?? undefined}
             mediaRef={m.mediaRef}
             isKilled={m.kill_switch_active === true}
+            wrap={m.wrap}
             onForward={handleForward}
           />
         ))}
@@ -285,6 +289,10 @@ export default function ChatPage() {
           <button type="button" onClick={() => document.getElementById('file-picker')?.click()} disabled={sending} className="p-2.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-50" title="File" aria-label="File">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" /></svg>
           </button>
+          <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer shrink-0">
+            <input type="checkbox" checked={secureWrapMode} onChange={e => setSecureWrapMode(e.target.checked)} className="rounded" />
+            <span>Secured</span>
+          </label>
           <input
             type="text"
             placeholder="Type a message..."

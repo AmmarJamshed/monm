@@ -16,6 +16,7 @@ type Props = {
   mediaId?: string | null;
   mediaRef?: string;
   isKilled?: boolean;
+  wrap?: boolean;
   onForward?: (messageId: string) => void;
 };
 
@@ -31,6 +32,7 @@ export default function MessageBubble({
   mediaId,
   mediaRef,
   isKilled = false,
+  wrap = false,
   onForward,
 }: Props) {
   const [showPing, setShowPing] = useState(isNew && !isMe);
@@ -46,6 +48,10 @@ export default function MessageBubble({
   const blobUrl = (mediaId && (mediaRef || !text)) ? mediaApi.blobUrl(mediaId) : null;
   const imgSrc = mediaType === 'image' && (text ? `data:${mime || 'image/jpeg'};base64,${text}` : blobUrl);
   const fileHref = mediaType === 'file' && (text ? `data:${mime || 'application/octet-stream'};base64,${text}` : blobUrl);
+  const token = typeof window !== 'undefined' ? localStorage.getItem('monm_token') : null;
+  const securedViewerUrl = mediaId && token
+    ? `${typeof window !== 'undefined' ? window.location.origin : ''}/view/${mediaId}?token=${encodeURIComponent(token)}`
+    : null;
 
   const handleFileDownload = async () => {
     if (!mediaId || isMe) return;
@@ -103,39 +109,77 @@ export default function MessageBubble({
               Content disabled — leaked. Kill switch activated.
             </div>
           ) : mediaType === 'image' && imgSrc ? (
-            <button
-              type="button"
-              onClick={() => setViewerOpen(true)}
-              className="block w-full text-left mt-1 rounded-lg overflow-hidden focus:outline-none"
-            >
-              <img
-                src={imgSrc}
-                alt="Shared"
-                className="max-w-full max-h-64 rounded-lg object-contain w-full"
-                draggable={false}
-                style={{ WebkitUserSelect: 'none', userSelect: 'none', pointerEvents: 'none' }}
-              />
-            </button>
-          ) : mediaType === 'file' ? (
-            <div className="flex items-center gap-2 mt-1 flex-wrap">
+            wrap && securedViewerUrl ? (
+              <a
+                href={securedViewerUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block mt-1 rounded-lg overflow-hidden border border-white/20"
+              >
+                <img
+                  src={imgSrc}
+                  alt="Shared"
+                  className="max-w-full max-h-64 rounded-lg object-contain w-full"
+                  draggable={false}
+                  style={{ WebkitUserSelect: 'none', userSelect: 'none', pointerEvents: 'none' }}
+                />
+                <span className="text-xs opacity-80 block py-1">Open in secured viewer →</span>
+              </a>
+            ) : (
               <button
                 type="button"
-                onClick={() => fileHref && setViewerOpen(true)}
-                disabled={!fileHref}
-                className="text-sm underline hover:opacity-80 disabled:opacity-50"
+                onClick={() => setViewerOpen(true)}
+                className="block w-full text-left mt-1 rounded-lg overflow-hidden focus:outline-none"
               >
-                View
+                <img
+                  src={imgSrc}
+                  alt="Shared"
+                  className="max-w-full max-h-64 rounded-lg object-contain w-full"
+                  draggable={false}
+                  style={{ WebkitUserSelect: 'none', userSelect: 'none', pointerEvents: 'none' }}
+                />
               </button>
-              {isMe && fileHref ? (
-                <a href={fileHref} download target="_blank" rel="noopener noreferrer" className="text-sm underline flex items-center gap-2">
-                  <span>📎 Download</span>
-                </a>
-              ) : downloadRequested ? (
-                <span className="text-sm text-slate-500">Download requested</span>
+            )
+          ) : mediaType === 'file' ? (
+            <div className="flex items-center gap-2 mt-1 flex-wrap">
+              {wrap && securedViewerUrl ? (
+                <>
+                  <a
+                    href={securedViewerUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm underline hover:opacity-80"
+                  >
+                    Open in secured viewer
+                  </a>
+                  {isMe && fileHref && (
+                    <a href={fileHref} download target="_blank" rel="noopener noreferrer" className="text-sm underline">
+                      📎 Download (you own)
+                    </a>
+                  )}
+                </>
               ) : (
-                <button type="button" onClick={handleFileDownload} className="text-sm underline flex items-center gap-2 hover:opacity-80">
-                  <span>📎 Download</span>
-                </button>
+                <>
+                  <button
+                    type="button"
+                    onClick={() => fileHref && setViewerOpen(true)}
+                    disabled={!fileHref}
+                    className="text-sm underline hover:opacity-80 disabled:opacity-50"
+                  >
+                    View
+                  </button>
+                  {isMe && fileHref ? (
+                    <a href={fileHref} download target="_blank" rel="noopener noreferrer" className="text-sm underline">
+                      📎 Download
+                    </a>
+                  ) : downloadRequested ? (
+                    <span className="text-sm text-slate-500">Download requested</span>
+                  ) : (
+                    <button type="button" onClick={handleFileDownload} className="text-sm underline hover:opacity-80">
+                      📎 Download
+                    </button>
+                  )}
+                </>
               )}
             </div>
           ) : (

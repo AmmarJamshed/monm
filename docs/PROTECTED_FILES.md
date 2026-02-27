@@ -1,15 +1,32 @@
 # Protected Files: Kill Switch & Screenshot Protection
 
-## Screenshot Protection (In-App)
+## Two Ways to Share Files
 
-**Files are viewable only inside the MonM app** so that ScreenshotGuard applies:
+### 1. Normal (default)
 
-- **View** opens PDF, Excel, images, videos, and text in a secure in-app viewer (blur when mouse leaves)
-- **Download** gives a copy for offline use — once downloaded, content is outside our control
+- **View** — Opens in-app viewer (protected)
+- **Download** — Recipient gets raw file; can open in Excel, Adobe, etc. Screenshots possible outside app
+- **Kill switch** — Works on blob URL; already-downloaded copies are outside our control
+
+### 2. Secured Wrapper (checkbox when sending)
+
+- **Open in secured viewer** — Recipient views via `/view/[mediaId]` — a standalone page with full ScreenshotGuard
+- No raw download for recipient (sender who owns it can still download)
+- Content always fetched from our API → **kill switch works from anywhere at any time**
+- Works like "Excel in secured OneDrive" — same usability, no screenshots, kill switch always executable
+
+**Kill switch works for both** — When activated, blob returns 410. Secured wrapper shows "Content disabled". Normal downloads: in-app view blocked; already-saved copies stay on disk (embedded macro can revoke if we implement protected .xlsm).
+
+---
+
+## Screenshot Protection (In-App & Secured Viewer)
+
+- **View** opens PDF, images, videos, text in a secure viewer (blur when mouse leaves)
+- **Secured wrapper** — Check "Secured" when attaching; recipient opens via link, no download
 - ScreenshotGuard blocks: PrintScreen, Win+Shift+S, Alt+PrintScreen, Cmd+Shift+3/4/5, copy, right-click, drag
 - Images and media are non-selectable and non-draggable
 
-**Limitation:** "Embedded code" inside PDF, Excel, images, or videos **cannot prevent screenshots** when opened in native apps (Adobe, Excel, Photos). Those formats either have no executable code (images, video, TXT) or run in sandboxed environments that cannot block OS-level capture. The only effective protection is **keeping content in the MonM app** and using the in-app viewer.
+**Limitation:** "Embedded code" inside PDF, Excel, images, or videos **cannot prevent screenshots** when opened in native apps (Adobe, Excel, Photos). The only effective protection is **secured wrapper** or **in-app viewing**.
 
 ---
 
