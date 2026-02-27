@@ -100,6 +100,35 @@ router.get('/killed-fingerprints', (req, res) => {
   }
 });
 
+/** GET files shared by current user in a conversation (for kill switch UI) */
+router.get('/shared-files', (req, res) => {
+  try {
+    const { conversationId } = req.query;
+    if (!conversationId) return res.status(400).json({ error: 'conversationId required' });
+    const db = getDb();
+    const participant = db.prepare(
+      'SELECT 1 FROM conversation_participants WHERE conversation_id = ? AND user_id = ?'
+    ).get(conversationId, req.userId);
+    if (!participant) return res.status(403).json({ error: 'Not in conversation' });
+    const rows = db.prepare(`
+      SELECT m.id, m.mime_type, m.kill_switch_active, m.message_id, msg.created_at
+      FROM media m
+      JOIN messages msg ON msg.id = m.message_id
+      WHERE msg.conversation_id = ? AND m.owner_id = ? AND m.message_id IS NOT NULL
+      ORDER BY msg.created_at DESC
+    `).all(conversationId, req.userId);
+    res.json(rows.map(r => ({
+      id: r.id,
+      mime_type: r.mime_type,
+      kill_switch_active: r.kill_switch_active === 1,
+      message_id: r.message_id,
+      created_at: r.created_at,
+    })));
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 /** GET check if user has forward permission for message (must be before :mediaId) */
 router.get('/can-forward/:messageId', (req, res) => {
   try {
@@ -208,7 +237,7 @@ router.post('/:mediaId/grant-download', (req, res) => {
 });
 
 /** POST activate kill switch (owner or leak detection) */
-router.post('/:mediaId/kill', (req, res) => {
+router.post('/:mediaId/kill', async (req, res) => {
   try {
     const { mediaId } = req.params;
     const db = getDb();
@@ -218,6 +247,9 @@ router.post('/:mediaId/kill', (req, res) => {
     if (!media) return res.status(404).json({ error: 'Media not found' });
     if (media.owner_id !== req.userId) return res.status(403).json({ error: 'Only the owner can activate kill switch' });
     db.prepare('UPDATE media SET kill_switch_active = 1 WHERE id = ?').run(mediaId);
+    if (media.fingerprint_hash) {
+      await blockchain.killFingerprint(media.fingerprint_hash);
+    }
     res.json({ activated: true });
   } catch (e) {
     res.status(500).json({ error: e.message });

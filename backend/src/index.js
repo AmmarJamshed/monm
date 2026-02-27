@@ -33,6 +33,20 @@ app.use('/api/auth', authRoutes);
 app.use('/api/conversations', conversationRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/messages', messageRoutes);
+// Public: for embedded macros/viewers to check if a fingerprint is killed (no auth)
+app.get('/api/media/fingerprint/:hash/killed', (req, res) => {
+  try {
+    const { hash } = req.params;
+    if (!hash || !/^[a-fA-F0-9]{64}$/.test(hash)) return res.status(400).json({ error: 'Invalid fingerprint hash' });
+    const db = getDb();
+    const row = db.prepare(
+      'SELECT 1 FROM media WHERE fingerprint_hash = ? AND kill_switch_active = 1 LIMIT 1'
+    ).get(hash.toLowerCase());
+    res.json({ killed: !!row });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
 app.use('/api/media', mediaRoutes);
 app.use('/api/debug', debugRoutes);
 

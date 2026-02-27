@@ -8,6 +8,7 @@ async function main() {
 
   const MessageHashRegistry = await hre.ethers.getContractFactory('MessageHashRegistry');
   const FileFingerprintRegistry = await hre.ethers.getContractFactory('FileFingerprintRegistry');
+  const KilledFingerprintRegistry = await hre.ethers.getContractFactory('KilledFingerprintRegistry');
   const ForwardTraceRegistry = await hre.ethers.getContractFactory('ForwardTraceRegistry');
   const LeakEvidenceRegistry = await hre.ethers.getContractFactory('LeakEvidenceRegistry');
 
@@ -20,6 +21,11 @@ async function main() {
   await fileRegistry.waitForDeployment();
   const fileAddr = await fileRegistry.getAddress();
   console.log('FileFingerprintRegistry:', fileAddr);
+
+  const killedRegistry = await KilledFingerprintRegistry.deploy();
+  await killedRegistry.waitForDeployment();
+  const killedAddr = await killedRegistry.getAddress();
+  console.log('KilledFingerprintRegistry:', killedAddr);
 
   const forwardRegistry = await ForwardTraceRegistry.deploy();
   await forwardRegistry.waitForDeployment();
@@ -38,6 +44,7 @@ async function main() {
   fs.writeFileSync(deployPath, JSON.stringify({
     MessageHashRegistry: msgAddr,
     FileFingerprintRegistry: fileAddr,
+    KilledFingerprintRegistry: killedAddr,
     ForwardTraceRegistry: forwardAddr,
     LeakEvidenceRegistry: leakAddr,
     network: 'amoy',

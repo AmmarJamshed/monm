@@ -170,4 +170,8 @@ export const media = {
     }),
   activateKillSwitch: (mediaId: string) =>
     api<{ activated: boolean }>(`/api/media/${mediaId}/kill`, { method: 'POST' }),
+  listSharedInConversation: (conversationId: string) =>
+    api<Array<{ id: string; mime_type: string; kill_switch_active: boolean; message_id: string; created_at: string }>>(
+      `/api/media/shared-files?conversationId=${encodeURIComponent(conversationId)}`
+    ),
 };

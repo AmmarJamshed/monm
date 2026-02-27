@@ -13,6 +13,7 @@ let contracts = {};
 const ABI = {
   MessageHashRegistry: ['function logMessageHash(bytes32 messageId, bytes32 messageHash) external'],
   FileFingerprintRegistry: ['function registerFingerprint(bytes32 fingerprint, string ipfsCid) external'],
+  KilledFingerprintRegistry: ['function killFingerprint(bytes32 fingerprint) external', 'function isKilled(bytes32 fingerprint) view returns (bool)'],
   ForwardTraceRegistry: ['function traceForward(bytes32 originalMessageId, bytes32 forwardId, bool permissionGranted) external'],
   LeakEvidenceRegistry: ['function reportLeak(bytes32 reportId, bytes32 fingerprint, string sourceUrl) external'],
 };
@@ -87,6 +88,29 @@ export async function traceForward(originalMessageId, forwardId, permissionGrant
   } catch (e) {
     console.error('traceForward error:', e.message);
     return null;
+  }
+}
+
+export async function killFingerprint(fingerprint) {
+  const c = contracts.KilledFingerprintRegistry;
+  if (!c) return null;
+  try {
+    const tx = await c.killFingerprint(toBytes32(fingerprint));
+    const receipt = await tx.wait();
+    return receipt.hash;
+  } catch (e) {
+    console.error('killFingerprint error:', e.message);
+    return null;
+  }
+}
+
+export async function isFingerprintKilledOnChain(fingerprint) {
+  const c = contracts.KilledFingerprintRegistry;
+  if (!c) return false;
+  try {
+    return await c.isKilled(toBytes32(fingerprint));
+  } catch {
+    return false;
   }
 }
 

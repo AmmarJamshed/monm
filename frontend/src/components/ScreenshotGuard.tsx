@@ -3,9 +3,9 @@
 import { useEffect, useCallback } from 'react';
 
 /**
- * Reduces content extraction and detects screenshot attempts:
- * - Disables text/media selection, right-click, and copy
- * - Intercepts PrintScreen, Win+Shift+S, Cmd+Shift+3/4/5, and similar shortcuts
+ * Reduces content extraction and screenshot attempts:
+ * - Disables text/media selection, right-click, copy, and drag
+ * - Intercepts PrintScreen, Win+Shift+S, Cmd+Shift+3/4/5, F12 (DevTools), and similar
  * - Note: Browsers cannot truly prevent OS-level screenshots; this blocks in-page copy and shows a warning on detected shortcuts.
  */
 export default function ScreenshotGuard({ children }: { children: React.ReactNode }) {
@@ -51,15 +51,20 @@ export default function ScreenshotGuard({ children }: { children: React.ReactNod
     e.preventDefault();
   }, []);
 
+  const handleDragStart = useCallback((e: DragEvent) => {
+    e.preventDefault();
+  }, []);
+
   useEffect(() => {
-    // Use capture phase so we get the event before other handlers
     document.addEventListener('keydown', handleKeyDown, true);
     document.addEventListener('copy', handleCopy, true);
+    document.addEventListener('dragstart', handleDragStart, true);
     return () => {
       document.removeEventListener('keydown', handleKeyDown, true);
       document.removeEventListener('copy', handleCopy, true);
+      document.removeEventListener('dragstart', handleDragStart, true);
     };
-  }, [handleKeyDown, handleCopy]);
+  }, [handleKeyDown, handleCopy, handleDragStart]);
 
   return (
     <div
@@ -73,6 +78,12 @@ export default function ScreenshotGuard({ children }: { children: React.ReactNod
         msUserSelect: 'none',
       }}
     >
+      <style>{`
+        .monm-no-capture img, .monm-no-capture video, .monm-no-capture canvas {
+          -webkit-user-select: none; user-select: none;
+          -webkit-user-drag: none;
+        }
+      `}</style>
       {children}
     </div>
   );

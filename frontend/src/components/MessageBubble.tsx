@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { media as mediaApi } from '@/lib/api';
+import SecureFileViewer from './SecureFileViewer';
 
 type Props = {
   text?: string;
@@ -34,6 +35,7 @@ export default function MessageBubble({
 }: Props) {
   const [showPing, setShowPing] = useState(isNew && !isMe);
   const [downloadRequested, setDownloadRequested] = useState(false);
+  const [viewerOpen, setViewerOpen] = useState(false);
 
   useEffect(() => {
     if (!showPing) return;
@@ -101,18 +103,38 @@ export default function MessageBubble({
               Content disabled — leaked. Kill switch activated.
             </div>
           ) : mediaType === 'image' && imgSrc ? (
-            <img src={imgSrc} alt="Shared" className="max-w-full max-h-64 rounded-lg object-contain mt-1" />
+            <button
+              type="button"
+              onClick={() => setViewerOpen(true)}
+              className="block w-full text-left mt-1 rounded-lg overflow-hidden focus:outline-none"
+            >
+              <img
+                src={imgSrc}
+                alt="Shared"
+                className="max-w-full max-h-64 rounded-lg object-contain w-full"
+                draggable={false}
+                style={{ WebkitUserSelect: 'none', userSelect: 'none', pointerEvents: 'none' }}
+              />
+            </button>
           ) : mediaType === 'file' ? (
-            <div className="flex items-center gap-2 mt-1">
+            <div className="flex items-center gap-2 mt-1 flex-wrap">
+              <button
+                type="button"
+                onClick={() => fileHref && setViewerOpen(true)}
+                disabled={!fileHref}
+                className="text-sm underline hover:opacity-80 disabled:opacity-50"
+              >
+                View
+              </button>
               {isMe && fileHref ? (
                 <a href={fileHref} download target="_blank" rel="noopener noreferrer" className="text-sm underline flex items-center gap-2">
-                  <span>📎 File</span>
+                  <span>📎 Download</span>
                 </a>
               ) : downloadRequested ? (
-                <span className="text-sm text-slate-500">Download permission requested. Sender must approve.</span>
+                <span className="text-sm text-slate-500">Download requested</span>
               ) : (
                 <button type="button" onClick={handleFileDownload} className="text-sm underline flex items-center gap-2 hover:opacity-80">
-                  <span>📎 File — Download</span>
+                  <span>📎 Download</span>
                 </button>
               )}
             </div>
@@ -121,6 +143,13 @@ export default function MessageBubble({
           )}
         </div>
       </div>
+      {viewerOpen && (
+        <SecureFileViewer
+          url={(mediaType === 'image' ? imgSrc : fileHref) || ''}
+          mime={mime}
+          onClose={() => setViewerOpen(false)}
+        />
+      )}
     </div>
   );
 }

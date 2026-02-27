@@ -42,17 +42,27 @@ export default function ChatsPage() {
       <header className="p-4 border-b flex flex-col gap-3" style={{ borderColor: 'var(--inbox-border)' }}>
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-semibold" style={{ color: 'var(--inbox-text)' }}>Messages</h1>
-          <button
-            onClick={() => router.push('/chats/new')}
-            className="p-2 rounded-lg hover:bg-slate-100 transition-colors"
-            style={{ color: 'var(--inbox-text-muted)' }}
-            title="New chat"
-            aria-label="New chat"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => router.push('/chats/kill-file')}
+              className="p-2 rounded-lg hover:bg-slate-100 transition-colors text-sm font-medium"
+              style={{ color: 'var(--inbox-text-muted)' }}
+              title="Kill shared file"
+            >
+              Kill shared file
+            </button>
+            <button
+              onClick={() => router.push('/chats/new')}
+              className="p-2 rounded-lg hover:bg-slate-100 transition-colors"
+              style={{ color: 'var(--inbox-text-muted)' }}
+              title="New chat"
+              aria-label="New chat"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+            </button>
+          </div>
         </div>
         <div className="relative">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 absolute left-3 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: 'var(--inbox-text-light)' }}>
