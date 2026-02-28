@@ -45,7 +45,11 @@ export default function KillFilePage() {
       setSelectedIds(new Set());
       setStep('files');
     } catch (e) {
-      alert((e as Error).message || 'Could not load files. Try again.');
+      const msg = (e as Error)?.message || 'Could not load files. Try again.';
+      const hint = /not found|Media not found|404|Failed to fetch/i.test(msg)
+        ? '\n\nDeploy the backend on Render: Dashboard → monm-api → Manual Deploy.'
+        : '';
+      alert(msg + hint);
     } finally {
       setLoading(false);
     }
