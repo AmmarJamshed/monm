@@ -60,6 +60,35 @@ router.post('/upload', upload.single('file'), async (req, res) => {
   }
 });
 
+/** GET files shared by current user in a conversation (must be before :mediaId) */
+router.get('/shared-files', (req, res) => {
+  try {
+    const { conversationId } = req.query;
+    if (!conversationId) return res.status(400).json({ error: 'conversationId required' });
+    const db = getDb();
+    const participant = db.prepare(
+      'SELECT 1 FROM conversation_participants WHERE conversation_id = ? AND user_id = ?'
+    ).get(conversationId, req.userId);
+    if (!participant) return res.status(403).json({ error: 'Not in conversation' });
+    const rows = db.prepare(`
+      SELECT m.id, m.mime_type, m.kill_switch_active, m.message_id, msg.created_at
+      FROM media m
+      JOIN messages msg ON msg.id = m.message_id
+      WHERE msg.conversation_id = ? AND m.owner_id = ? AND m.message_id IS NOT NULL
+      ORDER BY msg.created_at DESC
+    `).all(conversationId, req.userId);
+    res.json(rows.map(r => ({
+      id: r.id,
+      mime_type: r.mime_type,
+      kill_switch_active: r.kill_switch_active === 1,
+      message_id: r.message_id,
+      created_at: r.created_at,
+    })));
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 /** GET serve media file - user must be owner or in the conversation */
 router.get('/:mediaId/blob', (req, res) => {
   try {
@@ -95,35 +124,6 @@ router.get('/killed-fingerprints', (req, res) => {
       'SELECT fingerprint_hash FROM media WHERE kill_switch_active = 1'
     ).all();
     res.json(rows.map(r => r.fingerprint_hash));
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
-/** GET files shared by current user in a conversation (for kill switch UI) */
-router.get('/shared-files', (req, res) => {
-  try {
-    const { conversationId } = req.query;
-    if (!conversationId) return res.status(400).json({ error: 'conversationId required' });
-    const db = getDb();
-    const participant = db.prepare(
-      'SELECT 1 FROM conversation_participants WHERE conversation_id = ? AND user_id = ?'
-    ).get(conversationId, req.userId);
-    if (!participant) return res.status(403).json({ error: 'Not in conversation' });
-    const rows = db.prepare(`
-      SELECT m.id, m.mime_type, m.kill_switch_active, m.message_id, msg.created_at
-      FROM media m
-      JOIN messages msg ON msg.id = m.message_id
-      WHERE msg.conversation_id = ? AND m.owner_id = ? AND m.message_id IS NOT NULL
-      ORDER BY msg.created_at DESC
-    `).all(conversationId, req.userId);
-    res.json(rows.map(r => ({
-      id: r.id,
-      mime_type: r.mime_type,
-      kill_switch_active: r.kill_switch_active === 1,
-      message_id: r.message_id,
-      created_at: r.created_at,
-    })));
   } catch (e) {
     res.status(500).json({ error: e.message });
   }

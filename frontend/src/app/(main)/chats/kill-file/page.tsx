@@ -44,8 +44,8 @@ export default function KillFilePage() {
       setFiles(list);
       setSelectedIds(new Set());
       setStep('files');
-    } catch {
-      router.replace('/chats');
+    } catch (e) {
+      alert((e as Error).message || 'Could not load files. Try again.');
     } finally {
       setLoading(false);
     }
@@ -133,7 +133,10 @@ export default function KillFilePage() {
         ) : (
           <div className="space-y-4">
             {files.length === 0 ? (
-              <p className="text-slate-500">No files shared by you in this conversation.</p>
+              <div className="space-y-2">
+                <p className="text-slate-500">No files shared by you in this conversation.</p>
+                <p className="text-xs text-slate-400">Files you&apos;ve killed show &quot;(Killed)&quot; — they can no longer be viewed in the app. Downloaded copies on your desktop can&apos;t be revoked.</p>
+              </div>
             ) : (
               <>
                 <div className="flex items-center justify-between">
@@ -154,6 +157,7 @@ export default function KillFilePage() {
                     </button>
                   )}
                 </div>
+                <p className="text-xs text-slate-500 mb-2">Killed files can&apos;t be viewed in-app. Copies already downloaded to your desktop remain on disk.</p>
                 <ul className="space-y-2">
                   {files.map((f) => (
                     <li
