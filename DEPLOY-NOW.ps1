@@ -17,7 +17,7 @@ if ($status) {
     exit 1
 }
 Write-Host "`n[1] Pushing to GitHub..." -ForegroundColor Cyan
-git push origin master 2>&1
+git push origin master 2>$null
 if ($LASTEXITCODE -ne 0) { Write-Host "Push failed" -ForegroundColor Red; exit 1 }
 Write-Host "   OK" -ForegroundColor Green
 
