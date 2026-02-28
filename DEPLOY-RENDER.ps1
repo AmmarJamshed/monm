@@ -23,8 +23,8 @@ if ($hook) {
 } elseif ($key) {
     Write-Host "`nTriggering via API..." -ForegroundColor Cyan
     try {
-        $svc = Invoke-RestMethod -Uri "https://api.render.com/v1/services?limit=50" -Headers @{Authorization="Bearer $key"; Accept="application/json"}
-        $monm = $svc | Where-Object { $_.name -match "monm" } | Select-Object -First 1
+        $list = Invoke-RestMethod -Uri "https://api.render.com/v1/services?limit=50" -Headers @{Authorization="Bearer $key"; Accept="application/json"}
+        $monm = $list | ForEach-Object { $_.service } | Where-Object { $_.name -match "monm" } | Select-Object -First 1
         if ($monm) {
             Invoke-RestMethod -Method Post -Uri "https://api.render.com/v1/services/$($monm.id)/deploys" -Headers @{Authorization="Bearer $key"; "Content-Type"="application/json"}
             Write-Host "   Deploy triggered. Wait 3-5 min." -ForegroundColor Green

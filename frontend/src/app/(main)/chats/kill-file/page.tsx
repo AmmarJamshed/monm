@@ -45,10 +45,13 @@ export default function KillFilePage() {
       setSelectedIds(new Set());
       setStep('files');
     } catch (e) {
-      const msg = (e as Error)?.message || 'Could not load files. Try again.';
-      const hint = /not found|Media not found|404|Failed to fetch/i.test(msg)
-        ? '\n\nDeploy the backend on Render: Dashboard → monm-api → Manual Deploy.'
-        : '';
+      const err = e as Error & { cause?: unknown };
+      const msg = err?.message || 'Could not load files. Try again.';
+      let hint = '';
+      if (/not found|Media not found|404|Failed to fetch|Failed to load|network/i.test(msg)) {
+        hint = '\n\nCheck: 1) Render monm-api is deployed and running  2) Netlify NEXT_PUBLIC_API_URL points to your Render URL  3) CORS_ORIGINS on Render includes your Netlify URL';
+      }
+      console.error('[KillFile] listSharedInConversation failed:', msg, err);
       alert(msg + hint);
     } finally {
       setLoading(false);
