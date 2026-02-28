@@ -17,8 +17,12 @@ if ($status) {
     exit 1
 }
 Write-Host "`n[1] Pushing to GitHub..." -ForegroundColor Cyan
-git push origin master 2>$null
-if ($LASTEXITCODE -ne 0) { Write-Host "Push failed" -ForegroundColor Red; exit 1 }
+$prevErr = $ErrorActionPreference
+$ErrorActionPreference = "SilentlyContinue"
+git push origin master 2>&1 | Out-Null
+$ec = $LASTEXITCODE
+$ErrorActionPreference = $prevErr
+if ($ec -ne 0) { Write-Host "Push failed" -ForegroundColor Red; exit 1 }
 Write-Host "   OK" -ForegroundColor Green
 
 # 2. Netlify - trigger build via API (builds on Netlify servers, avoids local EPERM)
