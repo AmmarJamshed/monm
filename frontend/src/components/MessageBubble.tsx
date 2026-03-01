@@ -37,7 +37,14 @@ export default function MessageBubble({
 }: Props) {
   const [showPing, setShowPing] = useState(isNew && !isMe);
   const [downloadRequested, setDownloadRequested] = useState(false);
+  const [canDownload, setCanDownload] = useState<boolean | null>(isMe ? true : null);
   const [viewerOpen, setViewerOpen] = useState(false);
+
+  useEffect(() => {
+    if (mediaId && !isMe) {
+      mediaApi.canDownload(mediaId).then((r) => setCanDownload(r.allowed)).catch(() => setCanDownload(false));
+    }
+  }, [mediaId, isMe]);
 
   useEffect(() => {
     if (!showPing) return;
@@ -52,21 +59,13 @@ export default function MessageBubble({
   const securedViewerUrl = mediaId && token
     ? `${typeof window !== 'undefined' ? window.location.origin : ''}/view/${mediaId}?token=${encodeURIComponent(token)}`
     : null;
+  const protectedDownloadUrl = mediaId && token ? mediaApi.protectedDownloadUrl(mediaId) : null;
 
   const handleFileDownload = async () => {
     if (!mediaId || isMe) return;
     try {
-      const { allowed } = await mediaApi.canDownload(mediaId);
-      if (allowed && fileHref) {
-        const a = document.createElement('a');
-        a.href = fileHref;
-        a.download = 'file';
-        a.target = '_blank';
-        a.click();
-      } else {
-        await mediaApi.requestDownload(mediaId);
-        setDownloadRequested(true);
-      }
+      await mediaApi.requestDownload(mediaId);
+      setDownloadRequested(true);
     } catch {
       setDownloadRequested(true);
     }
@@ -152,9 +151,9 @@ export default function MessageBubble({
                   >
                     Open in secured viewer
                   </a>
-                  {isMe && fileHref && (
-                    <a href={fileHref} download target="_blank" rel="noopener noreferrer" className="text-sm underline">
-                      📎 Download (you own)
+                  {protectedDownloadUrl && (
+                    <a href={protectedDownloadUrl} download target="_blank" rel="noopener noreferrer" className="text-sm underline" title="Checks blockchain when opened; kill switch works even after download">
+                      📎 Download
                     </a>
                   )}
                 </>
@@ -168,15 +167,15 @@ export default function MessageBubble({
                   >
                     View
                   </button>
-                  {isMe && fileHref ? (
-                    <a href={fileHref} download target="_blank" rel="noopener noreferrer" className="text-sm underline">
+                  {canDownload && protectedDownloadUrl ? (
+                    <a href={protectedDownloadUrl} download target="_blank" rel="noopener noreferrer" className="text-sm underline" title="Checks blockchain when opened; kill switch works even after download">
                       📎 Download
                     </a>
                   ) : downloadRequested ? (
                     <span className="text-sm text-slate-500">Download requested</span>
                   ) : (
                     <button type="button" onClick={handleFileDownload} className="text-sm underline hover:opacity-80">
-                      📎 Download
+                      📎 Request download
                     </button>
                   )}
                 </>
@@ -191,6 +190,7 @@ export default function MessageBubble({
         <SecureFileViewer
           url={(mediaType === 'image' ? imgSrc : fileHref) || ''}
           mime={mime}
+          mediaId={mediaId}
           onClose={() => setViewerOpen(false)}
         />
       )}

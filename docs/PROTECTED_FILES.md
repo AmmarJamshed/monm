@@ -90,6 +90,19 @@ End Sub
   3. Inject the VBA macro (requires e.g. Aspose.Cells, or SheetJS + vba.bin template)
 - **Current flow**: Regular downloads serve the raw file. To get protected files, you would need to implement the conversion step or provide a "Save as protected" option that generates the .xlsm server-side.
 
+## HTML Protected Download (Implemented)
+
+For all file types (images, PDFs, documents), MonM now offers **"Download as protected"**:
+
+1. **Flow**: User clicks "🔒 Download as protected" → backend returns an HTML file with:
+   - Embedded fingerprint (SHA-256 hash)
+   - File content as base64 (max 8MB)
+   - JavaScript that fetches `GET /api/media/fingerprint/{hash}/killed` when the file is opened
+
+2. **When opened**: The HTML runs in the browser. It checks the API (which mirrors the blockchain). If `killed: true`, it shows "Content disabled" and does not reveal the content. If not killed, it decodes and displays (images, PDF) or offers download (other types).
+
+3. **Result**: Downloaded copies can be "killed" remotely. Even if someone saved the HTML file to their desktop months ago, opening it will check the current kill status and block display if the kill switch was activated.
+
 ## Blockchain Contract
 
 `KilledFingerprintRegistry` (Polygon Amoy):

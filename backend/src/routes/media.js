@@ -89,6 +89,106 @@ router.get('/shared-files', (req, res) => {
   }
 });
 
+/** GET protected download - HTML with embedded fingerprint + content; checks API when opened, blocks if killed */
+router.get('/:mediaId/protected-download', (req, res) => {
+  try {
+    const { mediaId } = req.params;
+    const db = getDb();
+    const media = db.prepare(
+      'SELECT m.file_path, m.mime_type, m.message_id, m.kill_switch_active, m.owner_id, m.fingerprint_hash FROM media m WHERE m.id = ?'
+    ).get(mediaId);
+    if (!media) return res.status(404).json({ error: 'Media not found' });
+    if (media.kill_switch_active === 1) return res.status(410).send('Content disabled');
+    if (!media.file_path || !media.fingerprint_hash) return res.status(404).json({ error: 'File not stored or no fingerprint' });
+    if (media.owner_id === req.userId) {
+      // Owner can always access
+    } else if (media.message_id) {
+      const msg = db.prepare('SELECT conversation_id FROM messages WHERE id = ?').get(media.message_id);
+      const participant = msg ? db.prepare('SELECT 1 FROM conversation_participants WHERE conversation_id = ? AND user_id = ?').get(msg.conversation_id, req.userId) : null;
+      if (!participant) return res.status(403).json({ error: 'Access denied' });
+    } else {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+    const fullPath = path.join(uploadDir, media.file_path);
+    if (!fs.existsSync(fullPath)) return res.status(404).json({ error: 'File not found' });
+    const buf = fs.readFileSync(fullPath);
+    const maxSize = 8 * 1024 * 1024; // 8MB raw
+    if (buf.length > maxSize) return res.status(413).json({ error: 'File too large for protected download (max 8MB)' });
+    const base64 = buf.toString('base64');
+    const fp = media.fingerprint_hash.toLowerCase();
+    const apiBase = process.env.API_PUBLIC_URL || `${req.protocol}://${req.get('host')}`;
+    const mime = (media.mime_type || 'application/octet-stream').toLowerCase();
+    const isImage = mime.startsWith('image/');
+    const isPdf = mime.includes('pdf');
+    const ext = path.extname(media.file_path) || '.bin';
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>MonM Protected File</title>
+<style>body{margin:0;font-family:system-ui,sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:1rem}
+.killed{color:#f87171;text-align:center;max-width:24rem}
+.content img{max-width:100%;max-height:90vh;object-fit:contain}
+.content embed{width:100%;height:90vh}
+.dl{display:inline-block;margin-top:1rem;padding:.5rem 1rem;background:#3b82f6;color:#fff;border-radius:.5rem;text-decoration:none}
+.dl:hover{background:#2563eb}</style>
+</head>
+<body>
+<div id="status" class="killed" style="display:none">
+  <p style="font-size:1.25rem;font-weight:600">Content disabled</p>
+  <p style="font-size:.875rem;opacity:.8">Kill switch activated. This file is no longer viewable.</p>
+</div>
+<div id="content" class="content" style="display:none"></div>
+<script>
+(function(){
+var fp="${fp}";
+var api="${apiBase}";
+var b64="${base64}";
+var mime="${mime.replace(/"/g, '\\"')}";
+var isImg=${isImage};
+var isPdf=${isPdf};
+var ext="${ext.replace(/"/g, '\\"')}";
+fetch(api+"/api/media/fingerprint/"+fp+"/killed").then(function(r){return r.json()}).then(function(d){
+  if(d.killed){
+    document.getElementById("status").style.display="block";
+    return;
+  }
+  var content=document.getElementById("content");
+  content.style.display="block";
+  var bin=atob(b64);
+  var bytes=new Uint8Array(bin.length);
+  for(var i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i);
+  var blob=new Blob([bytes],{type:mime});
+  var url=URL.createObjectURL(blob);
+  if(isImg){
+    var img=document.createElement("img");
+    img.src=url;
+    img.alt="";
+    content.appendChild(img);
+  }else if(isPdf){
+    var emb=document.createElement("embed");
+    emb.src=url;
+    emb.type=mime;
+    content.appendChild(emb);
+  }else{
+    var a=document.createElement("a");
+    a.href=url;
+    a.download="file"+ext;
+    a.className="dl";
+    a.textContent="Download file";
+    content.appendChild(a);
+  }
+}).catch(function(){document.getElementById("status").style.display="block";document.getElementById("status").innerHTML="<p>Unable to verify. Open from MonM.</p>";});
+})();
+</script>
+</body>
+</html>`;
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename="monm-protected' + ext + '.html"');
+    res.send(html);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 /** GET serve media file - user must be owner or in the conversation */
 router.get('/:mediaId/blob', (req, res) => {
   try {

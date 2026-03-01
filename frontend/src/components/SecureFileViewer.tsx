@@ -1,16 +1,18 @@
 'use client';
 
 import { useEffect, useCallback, useState } from 'react';
+import { media as mediaApi } from '@/lib/api';
 
 type Props = {
   url: string;
   mime?: string;
+  mediaId?: string | null;
   onClose: () => void;
 };
 
 /** In-app viewer for shared files. Content stays inside the app with ScreenshotGuard.
  *  Blurs when mouse leaves to reduce accidental capture. */
-export default function SecureFileViewer({ url, mime, onClose }: Props) {
+export default function SecureFileViewer({ url, mime, mediaId, onClose }: Props) {
   const [blurred, setBlurred] = useState(false);
   const [textContent, setTextContent] = useState<string | null>(null);
 
@@ -88,20 +90,39 @@ export default function SecureFileViewer({ url, mime, onClose }: Props) {
         {!isPdf && !isImage && !isVideo && !isAudio && !isText && (
           <div className="text-white text-center p-8">
             <p className="mb-4">Preview not available for this file type.</p>
-            <a
-              href={url}
-              download
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline text-blue-300"
-            >
-              Download to view
-            </a>
+            {mediaId ? (
+              <a
+                href={mediaApi.protectedDownloadUrl(mediaId)}
+                download
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline text-blue-300"
+                title="Checks blockchain when opened; kill switch works even after download"
+              >
+                📎 Download
+              </a>
+            ) : (
+              <a href={url} download target="_blank" rel="noopener noreferrer" className="underline text-blue-300">
+                📎 Download
+              </a>
+            )}
           </div>
         )}
       </div>
-      <div className="absolute top-0 left-0 right-0 flex justify-between items-center p-4 bg-black/60">
+      <div className="absolute top-0 left-0 right-0 flex justify-between items-center p-4 bg-black/60 gap-4">
         <span className="text-white/80 text-sm">Screenshot protection active</span>
+        {mediaId && (
+          <a
+            href={mediaApi.protectedDownloadUrl(mediaId)}
+            download
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm underline text-blue-300 hover:text-blue-200"
+            title="Checks blockchain when opened; kill switch works even after download"
+          >
+            📎 Download
+          </a>
+        )}
         <button
           onClick={onClose}
           className="px-4 py-2 rounded-lg bg-white/20 text-white hover:bg-white/30 font-medium"

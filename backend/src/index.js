@@ -20,7 +20,7 @@ const server = createServer(app);
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(cors({
   origin: (o, cb) => {
-    if (!o) return cb(null, true);
+    if (!o || o === 'null') return cb(null, true); // Allow file:// (protected HTML)
     const allowed = config.corsOrigins.some((a) => o === a || o.startsWith(a));
     cb(null, allowed ? o : false);
   },

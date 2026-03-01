@@ -99,8 +99,20 @@ function SecuredWrapperContent() {
 
   return (
     <div className="min-h-screen flex flex-col bg-black">
-      <header className="shrink-0 flex justify-between items-center p-3 bg-black/80 border-b border-slate-700">
+      <header className="shrink-0 flex justify-between items-center p-3 bg-black/80 border-b border-slate-700 gap-4">
         <span className="text-slate-400 text-sm">Secured viewer — no screenshots</span>
+        {token && (
+          <a
+            href={`${API}/api/media/${mediaId}/protected-download?token=${encodeURIComponent(token)}`}
+            download
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm underline text-blue-400 hover:text-blue-300"
+            title="Checks blockchain when opened; kill switch works even after download"
+          >
+            📎 Download
+          </a>
+        )}
         <a
           href="/"
           className="text-sm px-3 py-1.5 rounded bg-slate-700 text-white hover:bg-slate-600"
@@ -147,9 +159,18 @@ function SecuredWrapperContent() {
         {blobUrl && !isPdf && !isImage && !isVideo && !isAudio && !isText && (
           <div className="text-slate-400 text-center">
             <p className="mb-4">Preview not available for this file type.</p>
-            <a href={blobUrl} download target="_blank" rel="noopener noreferrer" className="underline text-blue-400">
-              Download
-            </a>
+            {token && (
+              <a
+                href={`${API}/api/media/${mediaId}/protected-download?token=${encodeURIComponent(token)}`}
+                download
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline text-blue-400"
+                title="Checks blockchain when opened; kill switch works even after download"
+              >
+                📎 Download
+              </a>
+            )}
           </div>
         )}
       </main>

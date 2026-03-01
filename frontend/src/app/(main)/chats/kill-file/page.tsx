@@ -142,7 +142,7 @@ export default function KillFilePage() {
             {files.length === 0 ? (
               <div className="space-y-2">
                 <p className="text-slate-500">No files shared by you in this conversation.</p>
-                <p className="text-xs text-slate-400">Files you&apos;ve killed show &quot;(Killed)&quot; — they can no longer be viewed in the app. Downloaded copies on your desktop can&apos;t be revoked.</p>
+                <p className="text-xs text-slate-400">Files you&apos;ve killed show &quot;(Killed)&quot; — they can no longer be viewed in the app. Protected downloads check the blockchain when opened and will show &quot;Content disabled&quot; if killed.</p>
               </div>
             ) : (
               <>
@@ -164,7 +164,7 @@ export default function KillFilePage() {
                     </button>
                   )}
                 </div>
-                <p className="text-xs text-slate-500 mb-2">Killed files can&apos;t be viewed in-app. Copies already downloaded to your desktop remain on disk.</p>
+                <p className="text-xs text-slate-500 mb-2">Killed files can&apos;t be viewed in-app. Protected downloads (HTML) check the blockchain when opened and will show &quot;Content disabled&quot; if killed.</p>
                 <ul className="space-y-2">
                   {files.map((f) => (
                     <li
