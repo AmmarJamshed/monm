@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import PWAInstall from '@/components/PWAInstall';
 import ScreenshotGuard from '@/components/ScreenshotGuard';
+import NativePrivacyScreen from '@/components/NativePrivacyScreen';
 
 export const metadata: Metadata = {
   title: 'MonM — Secure Messaging',
@@ -23,6 +24,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
       </head>
       <body className="bg-monm-bg text-monm-dark min-h-screen font-sans antialiased">
+        <NativePrivacyScreen />
         <ScreenshotGuard>
           {children}
           <PWAInstall />

@@ -1,0 +1,14 @@
+{
+  "appId": "app.monm.secure",
+  "appName": "MonM",
+  "webDir": "www",
+  "server": {
+    "url": "https://monm-secure-messaging.netlify.app"
+  },
+  "plugins": {
+    "PrivacyScreen": {
+      "enable": true,
+      "preventScreenshots": true
+    }
+  }
+}

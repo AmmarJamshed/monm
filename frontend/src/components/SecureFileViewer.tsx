@@ -2,6 +2,7 @@
 
 import { useEffect, useCallback, useState } from 'react';
 import { media as mediaApi } from '@/lib/api';
+import { useIsNative } from '@/hooks/useIsNative';
 
 type Props = {
   url: string;
@@ -15,6 +16,7 @@ type Props = {
 export default function SecureFileViewer({ url, mime, mediaId, onClose }: Props) {
   const [blurred, setBlurred] = useState(false);
   const [textContent, setTextContent] = useState<string | null>(null);
+  const isNative = useIsNative();
 
   const handleMouseLeave = useCallback(() => setBlurred(true), []);
   const handleMouseEnter = useCallback(() => setBlurred(false), []);
@@ -110,7 +112,9 @@ export default function SecureFileViewer({ url, mime, mediaId, onClose }: Props)
         )}
       </div>
       <div className="absolute top-0 left-0 right-0 flex justify-between items-center p-4 bg-black/60 gap-4">
-        <span className="text-white/80 text-sm">Screenshot protection active</span>
+        <span className="text-white/80 text-sm">
+          {isNative ? 'Screenshot protection active' : 'Copy & right-click disabled'}
+        </span>
         {mediaId && (
           <a
             href={mediaApi.protectedDownloadUrl(mediaId)}

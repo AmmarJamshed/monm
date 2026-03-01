@@ -2,12 +2,14 @@
 
 import { useEffect, useState, useCallback, Suspense } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
+import { useIsNative } from '@/hooks/useIsNative';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 function SecuredWrapperContent() {
   const params = useParams();
   const searchParams = useSearchParams();
+  const isNative = useIsNative();
   const mediaId = params.mediaId as string;
   const token = searchParams.get('token') || (typeof window !== 'undefined' ? localStorage.getItem('monm_token') : null);
   const [status, setStatus] = useState<'loading' | 'killed' | 'ready' | 'error'>('loading');
@@ -100,7 +102,9 @@ function SecuredWrapperContent() {
   return (
     <div className="min-h-screen flex flex-col bg-black">
       <header className="shrink-0 flex justify-between items-center p-3 bg-black/80 border-b border-slate-700 gap-4">
-        <span className="text-slate-400 text-sm">Secured viewer — no screenshots</span>
+        <span className="text-slate-400 text-sm">
+          Secured viewer — {isNative ? 'no screenshots' : 'copy disabled'}
+        </span>
         {token && (
           <a
             href={`${API}/api/media/${mediaId}/protected-download?token=${encodeURIComponent(token)}`}
