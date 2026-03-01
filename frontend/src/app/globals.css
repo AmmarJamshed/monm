@@ -5,17 +5,17 @@
 :root {
   /* Inbox template palette - white, light grey, vibrant blue */
   --inbox-bg: #ffffff;
-  --inbox-bg-secondary: #f8fafc;
+  --inbox-bg-secondary: #f0f2f5;
   --inbox-sidebar: #ffffff;
   --inbox-border: #e2e8f0;
   --inbox-border-light: #f1f5f9;
   --inbox-text: #1e293b;
   --inbox-text-muted: #64748b;
   --inbox-text-light: #94a3b8;
-  --inbox-blue: #2563eb;
-  --inbox-blue-hover: #1d4ed8;
-  --inbox-blue-bg: #eff6ff;
-  --inbox-blue-bg-strong: #dbeafe;
+  --inbox-blue: #128C7E;
+  --inbox-blue-hover: #0d6b60;
+  --inbox-blue-bg: #dcf8c6;
+  --inbox-blue-bg-strong: #c5e9b4;
   --inbox-radius: 8px;
   --inbox-radius-lg: 12px;
   --monm-primary: #2563eb;
@@ -46,8 +46,8 @@ body {
 html { overscroll-behavior-y: contain; }
 
 /* Mobile safe areas */
-@supports (padding-bottom: env(safe-area-inset-bottom)) {
-  .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+@supports (padding: env(safe-area-inset-bottom)) {
+  .pb-safe { padding-bottom: max(0.75rem, env(safe-area-inset-bottom)); }
   .pt-safe { padding-top: env(safe-area-inset-top); }
 }
 

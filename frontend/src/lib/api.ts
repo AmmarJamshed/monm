@@ -63,7 +63,14 @@ export const auth = {
 };
 
 export const conversations = {
-  list: () => api<Array<{ id: string; type: string; participants: { id: string; name: string }[] }>>('/api/conversations'),
+  list: () =>
+    api<Array<{
+      id: string;
+      type: string;
+      participants: { id: string; name: string }[];
+      last_message_at: string | null;
+      last_message_type: 'message' | 'photo' | 'document';
+    }>>('/api/conversations'),
   create: (participantIds: string[]) =>
     api<{ id: string; type: string }>('/api/conversations/create', {
       method: 'POST',

@@ -9,6 +9,7 @@ type Props = {
   isMe: boolean;
   label: string;
   time: string;
+  fullTime?: string;
   isNew?: boolean;
   mediaType?: 'image' | 'file';
   mime?: string;
@@ -25,6 +26,7 @@ export default function MessageBubble({
   isMe,
   label,
   time,
+  fullTime,
   isNew = false,
   mediaType,
   mime,
@@ -88,20 +90,29 @@ export default function MessageBubble({
           style={isMe ? { background: 'var(--inbox-blue)', color: '#fff' } : { color: 'var(--inbox-text)', borderColor: 'var(--inbox-border)' }}
         >
           <div className="flex items-center justify-between gap-2 mb-1">
-            <p className={`text-xs ${isMe ? 'opacity-90' : 'text-slate-500'}`}>
+            <p className={`text-xs flex-1 min-w-0 truncate ${isMe ? 'opacity-90' : 'text-slate-500'}`} title={fullTime}>
               {label} · {time}
             </p>
-            {messageId && onForward && (
-              <button
-                type="button"
-                onClick={() => onForward(messageId)}
-                className="text-xs opacity-70 hover:opacity-100 p-1 rounded"
-                title="Forward"
-                aria-label="Forward"
-              >
-                ↪
-              </button>
-            )}
+            <div className="flex items-center gap-1 shrink-0">
+              {isMe && (
+                <span className="opacity-70" title={fullTime}>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z" />
+                  </svg>
+                </span>
+              )}
+              {messageId && onForward && (
+                <button
+                  type="button"
+                  onClick={() => onForward(messageId)}
+                  className="text-xs opacity-70 hover:opacity-100 p-1 rounded"
+                  title="Forward"
+                  aria-label="Forward"
+                >
+                  ↪
+                </button>
+              )}
+            </div>
           </div>
           {isKilled ? (
             <div className="py-4 px-3 rounded-lg bg-slate-100 text-slate-500 text-sm mt-1">

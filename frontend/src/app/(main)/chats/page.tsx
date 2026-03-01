@@ -3,10 +3,19 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { conversations } from '@/lib/api';
+import { formatMessageTime } from '@/lib/format';
+
+type Chat = {
+  id: string;
+  type: string;
+  participants: { id: string; name: string }[];
+  last_message_at: string | null;
+  last_message_type: 'message' | 'photo' | 'document';
+};
 
 export default function ChatsPage() {
   const router = useRouter();
-  const [chats, setChats] = useState<Array<{ id: string; type: string; participants: { id: string; name: string }[] }>>([]);
+  const [chats, setChats] = useState<Chat[]>([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<{ name: string } | null>(null);
   const [search, setSearch] = useState('');
@@ -39,9 +48,9 @@ export default function ChatsPage() {
 
   return (
     <div className="flex-1 flex flex-col">
-      <header className="p-4 border-b flex flex-col gap-3" style={{ borderColor: 'var(--inbox-border)' }}>
+      <header className="p-4 border-b flex flex-col gap-3" style={{ borderColor: 'var(--inbox-border)', background: 'var(--inbox-bg)' }}>
         <div className="flex items-center justify-between">
-          <h1 className="text-xl font-semibold" style={{ color: 'var(--inbox-text)' }}>Messages</h1>
+          <h1 className="text-xl font-semibold" style={{ color: 'var(--inbox-text)' }}>Chats</h1>
           <div className="flex items-center gap-1">
             <button
               onClick={() => router.push('/chats/kill-file')}
@@ -77,11 +86,6 @@ export default function ChatsPage() {
             style={{ background: 'var(--inbox-bg-secondary)', border: '1px solid var(--inbox-border)', borderRadius: 'var(--inbox-radius)', color: 'var(--inbox-text)' }}
           />
         </div>
-        <div className="flex items-center gap-2">
-          <select className="text-sm py-1.5 px-2 rounded outline-none" style={{ border: '1px solid var(--inbox-border)', color: 'var(--inbox-text-muted)', background: 'var(--inbox-bg)' }}>
-            <option>↓↑ Newest</option>
-          </select>
-        </div>
       </header>
       <div className="flex-1 overflow-auto">
         {filteredChats.length === 0 ? (
@@ -96,24 +100,36 @@ export default function ChatsPage() {
             </button>
           </div>
         ) : (
-          <ul className="divide-y divide-slate-100">
-            {filteredChats.map((c, i) => (
+          <ul className="divide-y" style={{ borderColor: 'var(--inbox-border)' }}>
+            {filteredChats.map((c) => (
               <li
                 key={c.id}
                 onClick={() => router.push(`/chats/${c.id}`)}
-                className="flex items-center gap-4 px-4 py-3 cursor-pointer transition-colors hover:bg-slate-50"
-                style={i === 0 ? { background: 'var(--inbox-blue-bg-strong)' } : {}}
+                className="flex items-center gap-4 px-4 py-3 cursor-pointer transition-colors hover:bg-slate-50 active:bg-slate-100"
               >
                 <div className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg shrink-0" style={{ background: 'var(--inbox-blue-bg)', color: 'var(--inbox-blue)' }}>
                   {(c.participants[0]?.name || '?')[0]}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium truncate" style={{ color: 'var(--inbox-text)' }}>
-                    {c.participants.map((p: { name: string }) => p.name).join(', ')}
+                  <div className="flex items-baseline justify-between gap-2">
+                    <p className="font-medium truncate" style={{ color: 'var(--inbox-text)' }}>
+                      {c.participants.map((p: { name: string }) => p.name).join(', ')}
+                    </p>
+                    {c.last_message_at && (
+                      <span className="text-xs shrink-0" style={{ color: 'var(--inbox-text-muted)' }}>
+                        {formatMessageTime(c.last_message_at)}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-sm truncate mt-0.5" style={{ color: 'var(--inbox-text-muted)' }}>
+                    {c.last_message_type === 'photo' && '📷 Photo'}
+                    {c.last_message_type === 'document' && '📎 Document'}
+                    {c.last_message_type === 'message' && 'Message'}
                   </p>
-                  <p className="text-xs" style={{ color: 'var(--inbox-text-muted)' }}>Tap to open</p>
                 </div>
-                <span style={{ color: 'var(--inbox-text-light)' }}>→</span>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 shrink-0" style={{ color: 'var(--inbox-text-light)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
               </li>
             ))}
           </ul>

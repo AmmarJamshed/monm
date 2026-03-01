@@ -10,18 +10,30 @@ router.get('/', (req, res) => {
   try {
     const db = getDb();
     const rows = db.prepare(`
-      SELECT c.id, c.type, c.created_at, 
-             (SELECT json_group_array(json_object('id', u2.id, 'name', u2.name)) 
-              FROM conversation_participants cp2 
-              JOIN users u2 ON u2.id = cp2.user_id 
-              WHERE cp2.conversation_id = c.id) as participants
+      SELECT c.id, c.type, c.created_at,
+             (SELECT json_group_array(json_object('id', u2.id, 'name', u2.name))
+              FROM conversation_participants cp2
+              JOIN users u2 ON u2.id = cp2.user_id
+              WHERE cp2.conversation_id = c.id) as participants,
+             (SELECT m.created_at FROM messages m WHERE m.conversation_id = c.id ORDER BY m.created_at DESC LIMIT 1) as last_message_at,
+             (SELECT CASE WHEN med.id IS NOT NULL THEN (CASE WHEN med.mime_type LIKE 'image/%' THEN 'photo' ELSE 'document' END) ELSE 'message' END
+              FROM messages m
+              LEFT JOIN media med ON med.message_id = m.id
+              WHERE m.conversation_id = c.id ORDER BY m.created_at DESC LIMIT 1) as last_message_type
       FROM conversations c
       WHERE c.id IN (
         SELECT conversation_id FROM conversation_participants WHERE user_id = ?
       )
       ORDER BY (SELECT MAX(created_at) FROM messages WHERE conversation_id = c.id) DESC
     `).all(req.userId);
-    res.json(rows.map(r => ({ ...r, participants: JSON.parse(r.participants || '[]') })));
+    res.json(rows.map(r => ({
+      id: r.id,
+      type: r.type,
+      created_at: r.created_at,
+      participants: JSON.parse(r.participants || '[]'),
+      last_message_at: r.last_message_at || null,
+      last_message_type: r.last_message_type || 'message',
+    })));
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
