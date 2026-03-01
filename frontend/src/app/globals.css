@@ -3,28 +3,28 @@
 @tailwind utilities;
 
 :root {
-  /* Inbox template palette - white, light grey, vibrant blue */
-  --inbox-bg: #ffffff;
-  --inbox-bg-secondary: #f0f2f5;
-  --inbox-sidebar: #ffffff;
-  --inbox-border: #e2e8f0;
-  --inbox-border-light: #f1f5f9;
+  /* Slightly darker palette - soft grays instead of pure white */
+  --inbox-bg: #f4f4f5;
+  --inbox-bg-secondary: #e4e4e7;
+  --inbox-sidebar: #f0f0f1;
+  --inbox-border: #d4d4d8;
+  --inbox-border-light: #e4e4e7;
   --inbox-text: #1e293b;
   --inbox-text-muted: #64748b;
   --inbox-text-light: #94a3b8;
   --inbox-blue: #128C7E;
   --inbox-blue-hover: #0d6b60;
-  --inbox-blue-bg: #dcf8c6;
-  --inbox-blue-bg-strong: #c5e9b4;
+  --inbox-blue-bg: #c8e6c9;
+  --inbox-blue-bg-strong: #a5d6a7;
   --inbox-radius: 8px;
   --inbox-radius-lg: 12px;
   --monm-primary: #2563eb;
   --monm-secondary: #8B5CF6;
   --monm-accent: #F472B6;
   --monm-dark: #1e293b;
-  --monm-bg: #f8fafc;
-  --monm-glass: rgba(255, 255, 255, 0.95);
-  --monm-glass-border: rgba(226, 232, 240, 0.8);
+  --monm-bg: #f0f0f1;
+  --monm-glass: rgba(244, 244, 245, 0.98);
+  --monm-glass-border: rgba(212, 212, 216, 0.8);
   --monm-glow: rgba(37, 99, 235, 0.2);
 }
 
