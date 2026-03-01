@@ -90,9 +90,17 @@ End Sub
   3. Inject the VBA macro (requires e.g. Aspose.Cells, or SheetJS + vba.bin template)
 - **Current flow**: Regular downloads serve the raw file. To get protected files, you would need to implement the conversion step or provide a "Save as protected" option that generates the .xlsm server-side.
 
+## Excel .xlsm Protected Download (Implemented)
+
+For Excel files (.xlsx, .xls), MonM returns **.xlsm** (macro-enabled) with:
+- Hidden sheet `_MonM` with A1=fingerprint, A2=API URL
+- VBA macro in `ThisWorkbook` that runs on open: fetches `GET /api/media/fingerprint/{fp}/killed`, and if killed, shows "Content disabled" and closes the workbook
+
+**Template**: `backend/templates/monm-template.xlsm` is built from `backend/scripts/create-template.js`. The template uses `vbaProject.bin` (from MS-OVBA/tests/blank). **Note**: The default blank vbaProject.bin may not include the kill-check macro. For full kill-switch support, create a custom vbaProject.bin from `Workbook_Open.vba` using [vbaProject-Compiler](https://github.com/Beakerboy/vbaProject-Compiler), then run `node scripts/create-template.js` again.
+
 ## HTML Protected Download (Implemented)
 
-For all file types (images, PDFs, documents), MonM now offers **"Download as protected"**:
+For images, PDFs, and other file types, MonM returns **HTML** with:
 
 1. **Flow**: User clicks "🔒 Download as protected" → backend returns an HTML file with:
    - Embedded fingerprint (SHA-256 hash)

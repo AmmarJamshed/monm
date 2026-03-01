@@ -3,11 +3,15 @@ import { v4 as uuidv4 } from 'uuid';
 import path from 'path';
 import fs from 'fs';
 import multer from 'multer';
+import { fileURLToPath } from 'url';
 import { getDb } from '../db/index.js';
 import { authMiddleware } from '../middleware/auth.js';
 import { config } from '../config/index.js';
 import { sha256Buffer } from '../crypto/index.js';
 import * as blockchain from '../blockchain/index.js';
+import * as XLSX from 'xlsx';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const router = Router();
 router.use(authMiddleware);
@@ -114,13 +118,35 @@ router.get('/:mediaId/protected-download', (req, res) => {
     const buf = fs.readFileSync(fullPath);
     const maxSize = 8 * 1024 * 1024; // 8MB raw
     if (buf.length > maxSize) return res.status(413).json({ error: 'File too large for protected download (max 8MB)' });
-    const base64 = buf.toString('base64');
     const fp = media.fingerprint_hash.toLowerCase();
     const apiBase = process.env.API_PUBLIC_URL || `${req.protocol}://${req.get('host')}`;
     const mime = (media.mime_type || 'application/octet-stream').toLowerCase();
+    const ext = path.extname(media.file_path) || '.bin';
+    const isExcel = /\.(xlsx|xls|xlsm)$/i.test(media.file_path) || mime.includes('spreadsheet') || mime.includes('excel');
+
+    // Excel: return .xlsm with embedded macro that checks kill status when opened
+    if (isExcel) {
+      try {
+        const templatePath = path.join(__dirname, '..', 'templates', 'monm-template.xlsm');
+        if (fs.existsSync(templatePath)) {
+          const template = XLSX.read(fs.readFileSync(templatePath), { bookVBA: true });
+          const wb = XLSX.read(buf, { type: 'buffer' });
+          const monmSheet = XLSX.utils.aoa_to_sheet([[fp], [apiBase]]);
+          XLSX.utils.book_append_sheet(wb, monmSheet, '_MonM');
+          wb.vbaraw = template.vbaraw;
+          const out = XLSX.write(wb, { type: 'buffer', bookType: 'xlsm', bookVBA: true });
+          res.setHeader('Content-Type', 'application/vnd.ms-excel.sheet.macroEnabled.12');
+          res.setHeader('Content-Disposition', 'attachment; filename="monm-protected.xlsm"');
+          return res.send(out);
+        }
+      } catch (e) {
+        console.error('xlsm conversion failed:', e.message);
+      }
+    }
+
+    const base64 = buf.toString('base64');
     const isImage = mime.startsWith('image/');
     const isPdf = mime.includes('pdf');
-    const ext = path.extname(media.file_path) || '.bin';
     const html = `<!DOCTYPE html>
 <html lang="en">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>MonM Protected File</title>
@@ -169,12 +195,11 @@ fetch(api+"/api/media/fingerprint/"+fp+"/killed").then(function(r){return r.json
     emb.type=mime;
     content.appendChild(emb);
   }else{
-    var a=document.createElement("a");
-    a.href=url;
-    a.download="file"+ext;
-    a.className="dl";
-    a.textContent="Download file";
-    content.appendChild(a);
+    var msg=document.createElement("p");
+    msg.className="dl";
+    msg.style.marginTop="1rem";
+    msg.innerHTML="This file type cannot be previewed here. <strong>Open in MonM app</strong> to view. Offline download is disabled so the kill switch works when you activate it.";
+    content.appendChild(msg);
   }
 }).catch(function(){document.getElementById("status").style.display="block";document.getElementById("status").innerHTML="<p>Unable to verify. Open from MonM.</p>";});
 })();

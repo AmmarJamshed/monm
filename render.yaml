@@ -28,6 +28,8 @@ services:
         value: https://monm-secure-messaging.netlify.app
       - key: CORS_ORIGINS
         value: https://monm-secure-messaging.netlify.app
+      - key: API_PUBLIC_URL
+        value: https://monm-api.onrender.com
       - key: DATA_ROOT
         value: /var/data/monm
       - key: DB_PATH
