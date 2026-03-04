@@ -154,9 +154,10 @@ export const media = {
     return `${API}/api/media/${mediaId}/blob${token ? `?token=${encodeURIComponent(token)}` : ''}`;
   },
   /** URL for protected download - HTML with embedded fingerprint; checks API when opened, blocks if killed */
-  protectedDownloadUrl: (mediaId: string): string => {
+  protectedDownloadUrl: (mediaId: string, inline = false): string => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('monm_token') : null;
-    return `${API}/api/media/${mediaId}/protected-download${token ? `?token=${encodeURIComponent(token)}` : ''}`;
+    const base = `${API}/api/media/${mediaId}/protected-download${token ? `?token=${encodeURIComponent(token)}` : ''}`;
+    return inline ? `${base}${base.includes('?') ? '&' : '?'}inline=1` : base;
   },
   killedFingerprints: () => api<string[]>('/api/media/killed-fingerprints'),
   canForward: (messageId: string) => api<{ allowed: boolean }>(`/api/media/can-forward/${messageId}`),

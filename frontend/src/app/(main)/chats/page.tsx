@@ -41,29 +41,28 @@ export default function ChatsPage() {
   if (loading || !user) {
     return (
       <div className="flex-1 flex items-center justify-center">
-        <div className="font-medium animate-pulse" style={{ color: 'var(--inbox-blue)' }}>Loading…</div>
+        <div className="font-medium animate-pulse text-[var(--wa-accent)]">Loading…</div>
       </div>
     );
   }
 
   return (
-    <div className="flex-1 flex flex-col">
-      <header className="p-4 border-b flex flex-col gap-3" style={{ borderColor: 'var(--inbox-border)', background: 'var(--inbox-bg)' }}>
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl font-semibold" style={{ color: 'var(--inbox-text)' }}>Chats</h1>
-          <div className="flex items-center gap-1">
+    <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+      <header className="shrink-0 p-3 md:p-4 border-b flex flex-col gap-3" style={{ borderColor: 'var(--wa-border)', background: 'var(--wa-header)' }}>
+        <div className="flex items-center justify-between gap-2 min-h-[44px]">
+          <h1 className="font-semibold text-lg md:text-xl text-white truncate">Chats</h1>
+          <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={() => router.push('/chats/kill-file')}
-              className="p-2 rounded-lg hover:bg-slate-100 transition-colors text-sm font-medium"
-              style={{ color: 'var(--inbox-text-muted)' }}
+              className="px-3 py-2 rounded-lg font-semibold text-sm text-white bg-red-600 hover:bg-red-700 active:bg-red-800 transition-colors shadow-sm border border-red-700/50"
               title="Kill shared file"
             >
-              Kill shared file
+              <span className="hidden sm:inline">Kill file</span>
+              <span className="sm:hidden">Kill</span>
             </button>
             <button
               onClick={() => router.push('/chats/new')}
-              className="p-2 rounded-lg hover:bg-slate-100 transition-colors"
-              style={{ color: 'var(--inbox-text-muted)' }}
+              className="p-2 rounded-lg hover:bg-white/10 transition-colors text-white"
               title="New chat"
               aria-label="New chat"
             >
@@ -74,7 +73,7 @@ export default function ChatsPage() {
           </div>
         </div>
         <div className="relative">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 absolute left-3 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: 'var(--inbox-text-light)' }}>
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 absolute left-3 top-1/2 -translate-y-1/2 text-[var(--wa-text-light)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           <input
@@ -82,15 +81,14 @@ export default function ChatsPage() {
             placeholder="Search"
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 outline-none transition"
-            style={{ background: 'var(--inbox-bg-secondary)', border: '1px solid var(--inbox-border)', borderRadius: 'var(--inbox-radius)', color: 'var(--inbox-text)' }}
+            className="w-full pl-10 pr-4 py-2.5 outline-none rounded-lg bg-white/95 text-[var(--wa-text)] placeholder-[var(--wa-text-muted)]"
           />
         </div>
       </header>
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 overflow-auto bg-chat-pattern min-h-0">
         {filteredChats.length === 0 ? (
-          <div className="flex flex-col items-center justify-center flex-1 p-8" style={{ color: 'var(--inbox-text-muted)' }}>
-            <p className="mb-6 text-lg" style={{ color: 'var(--inbox-text)' }}>No conversations yet.</p>
+          <div className="flex flex-col items-center justify-center flex-1 p-8 text-[var(--wa-text-muted)]">
+            <p className="mb-6 text-lg text-[var(--wa-text)]">No conversations yet.</p>
             <p className="mb-6 text-sm">Start a chat with someone 💬</p>
             <button
               onClick={() => router.push('/chats/new')}
@@ -100,34 +98,34 @@ export default function ChatsPage() {
             </button>
           </div>
         ) : (
-          <ul className="divide-y" style={{ borderColor: 'var(--inbox-border)' }}>
+          <ul className="divide-y divide-[var(--wa-border)]">
             {filteredChats.map((c) => (
               <li
                 key={c.id}
                 onClick={() => router.push(`/chats/${c.id}`)}
-                className="flex items-center gap-4 px-4 py-3 cursor-pointer transition-colors hover:bg-slate-50 active:bg-slate-100"
+                className="flex items-center gap-4 px-4 py-3 cursor-pointer transition-colors hover:bg-white/50 active:bg-white/70 bg-white"
               >
-                <div className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg shrink-0" style={{ background: 'var(--inbox-blue-bg)', color: 'var(--inbox-blue)' }}>
+                <div className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg shrink-0 bg-[var(--wa-accent)]/15 text-[var(--wa-accent)]">
                   {(c.participants[0]?.name || '?')[0]}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-baseline justify-between gap-2">
-                    <p className="font-medium truncate" style={{ color: 'var(--inbox-text)' }}>
+                    <p className="font-medium truncate text-[var(--wa-text)]">
                       {c.participants.map((p: { name: string }) => p.name).join(', ')}
                     </p>
                     {c.last_message_at && (
-                      <span className="text-xs shrink-0" style={{ color: 'var(--inbox-text-muted)' }}>
+                      <span className="text-xs shrink-0 text-[var(--wa-text-muted)]">
                         {formatMessageTime(c.last_message_at)}
                       </span>
                     )}
                   </div>
-                  <p className="text-sm truncate mt-0.5" style={{ color: 'var(--inbox-text-muted)' }}>
+                  <p className="text-sm truncate mt-0.5 text-[var(--wa-text-muted)]">
                     {c.last_message_type === 'photo' && '📷 Photo'}
                     {c.last_message_type === 'document' && '📎 Document'}
                     {c.last_message_type === 'message' && 'Message'}
                   </p>
                 </div>
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 shrink-0" style={{ color: 'var(--inbox-text-light)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 shrink-0 text-[var(--wa-text-light)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
               </li>

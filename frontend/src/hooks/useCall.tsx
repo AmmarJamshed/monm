@@ -3,18 +3,11 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import CallModal from '@/components/CallModal';
 import { showCallNotification } from '@/lib/notifications';
+import { getMediaStreamWithFallback } from '@/lib/mediaPermissions';
 
 const servers: RTCConfiguration = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
 type CallData = { type: string; from?: string; to?: string; fromName?: string; offer?: RTCSessionDescriptionInit; answer?: RTCSessionDescriptionInit; candidate?: RTCIceCandidateInit; isVideo?: boolean };
-
-function getMediaStream(audio: boolean, video: boolean): Promise<MediaStream> {
-  const constraints: MediaStreamConstraints = {
-    audio: audio ? { echoCancellation: true, noiseSuppression: true } : false,
-    video: video ? { width: { ideal: 640 }, height: { ideal: 480 } } : false,
-  };
-  return navigator.mediaDevices.getUserMedia(constraints);
-}
 
 export function useCall(userId: string | null, wsSend: (m: Record<string, unknown>) => void, wsSubscribe: (h: (d: Record<string, unknown>) => void) => () => void) {
   const [callState, setCallState] = useState<'idle' | 'incoming' | 'outgoing' | 'active'>('idle');
@@ -79,7 +72,13 @@ export function useCall(userId: string | null, wsSend: (m: Record<string, unknow
       if (requestingMediaRef.current) return;
       try {
         requestingMediaRef.current = true;
-        const stream = await getMediaStream(true, video);
+        const result = await getMediaStreamWithFallback(true, video);
+        if ('error' in result) {
+          alert(result.error);
+          cleanup();
+          return;
+        }
+        const stream = result.stream;
         localStreamRef.current = stream;
         setLocalStream(stream);
         setPeerId(targetId);
@@ -99,7 +98,7 @@ export function useCall(userId: string | null, wsSend: (m: Record<string, unknow
         await pc.setLocalDescription(offer);
         wsSend({ type: 'call_request', to: targetId, fromName: (JSON.parse(localStorage.getItem('monm_user') || '{}')).name, conversationId: '', isVideo: video, offer: offer });
       } catch (e) {
-        alert((e as Error).message || 'Could not start call');
+        alert((e as Error)?.message || 'Could not start call');
         cleanup();
       } finally {
         requestingMediaRef.current = false;
@@ -114,7 +113,14 @@ export function useCall(userId: string | null, wsSend: (m: Record<string, unknow
       if (requestingMediaRef.current) return;
       try {
         requestingMediaRef.current = true;
-        const stream = await getMediaStream(true, video);
+        const result = await getMediaStreamWithFallback(true, video);
+        if ('error' in result) {
+          alert(result.error);
+          wsSend({ type: 'call_reject', to: fromId });
+          cleanup();
+          return;
+        }
+        const stream = result.stream;
         localStreamRef.current = stream;
         setLocalStream(stream);
         setPeerId(fromId);

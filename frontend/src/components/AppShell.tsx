@@ -59,15 +59,15 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="flex min-h-screen overflow-x-hidden" style={{ backgroundColor: 'var(--inbox-bg-secondary)' }}>
-      {/* Mobile: Top bar with hamburger */}
-      <header className="md:hidden fixed top-0 left-0 right-0 z-40 flex items-center gap-3 px-3 py-2 pt-safe border-b" style={{ background: 'var(--inbox-sidebar)', borderColor: 'var(--inbox-border)' }}>
-        <button onClick={() => setSidebarOpen(true)} className="p-2 -ml-1 rounded-lg hover:bg-slate-100" aria-label="Open menu">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <div className="flex min-h-screen overflow-x-hidden" style={{ backgroundColor: 'var(--wa-bg)' }}>
+      {/* Mobile: Top bar - dark blue, safe area aware */}
+      <header className="md:hidden fixed top-0 left-0 right-0 z-40 flex items-center gap-3 px-3 py-3 pt-safe border-b border-white/10" style={{ background: 'var(--wa-header)', minHeight: '56px' }}>
+        <button onClick={() => setSidebarOpen(true)} className="p-2 -ml-1 rounded-lg hover:bg-white/10" aria-label="Open menu">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
-        <span className="font-semibold text-slate-800">MonM</span>
+        <span className="font-semibold text-lg text-white">MonM</span>
       </header>
       {sidebarOpen && (
         <div className="md:hidden fixed inset-0 z-50 bg-black/40" onClick={() => setSidebarOpen(false)} aria-hidden />
@@ -79,18 +79,18 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           fixed inset-y-0 left-0
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
       >
-        <div className="p-4 border-b border-slate-200 flex items-center justify-between">
+        <div className="p-4 border-b flex items-center justify-between" style={{ borderColor: 'rgba(255,255,255,0.1)', background: 'var(--wa-header)' }}>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-lg" style={{ backgroundColor: 'var(--inbox-blue)' }}>
+            <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg bg-white/20 text-white">
               M
             </div>
             <div>
-              <h1 className="font-semibold" style={{ color: 'var(--inbox-text)' }}>MonM</h1>
-              <p className="text-xs truncate max-w-[140px]" style={{ color: 'var(--inbox-text-muted)' }}>{userName}</p>
+              <h1 className="font-semibold text-lg text-white">MonM</h1>
+              <p className="text-xs truncate max-w-[140px] text-white/70">{userName}</p>
             </div>
           </div>
-          <button onClick={() => setSidebarOpen(false)} className="md:hidden p-2 rounded-lg hover:bg-slate-100" aria-label="Close menu">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+          <button onClick={() => setSidebarOpen(false)} className="md:hidden p-2 rounded-lg hover:bg-white/10 text-white/80" aria-label="Close menu">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </div>
         <nav className="flex-1 p-2">
@@ -101,7 +101,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 key={item.href}
                 onClick={() => router.push(item.href)}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left text-sm font-medium transition-colors ${active ? 'inbox-selected' : ''}`}
-                style={active ? { backgroundColor: 'var(--inbox-blue-bg)', color: 'var(--inbox-blue)' } : { color: 'var(--inbox-text-muted)' }}
+                style={active ? { backgroundColor: 'rgba(255,255,255,0.15)', color: '#fff' } : { color: 'rgba(255,255,255,0.8)' }}
               >
                 {item.icon}
                 {item.label}
@@ -109,11 +109,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             );
           })}
         </nav>
-        <div className="p-2 border-t border-slate-200">
+        <div className="p-2 border-t border-white/10">
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors"
-            style={{ color: 'var(--inbox-text-muted)' }}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-white/10 text-white/80"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -122,7 +121,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           </button>
         </div>
       </aside>
-      <main className="flex-1 min-w-0 flex flex-col inbox-main md:ml-0 pt-12 md:pt-0">
+      <main className="flex-1 min-w-0 flex flex-col inbox-main md:ml-0 md:pt-0 pb-safe main-mobile-pad">
         {children}
       </main>
     </div>

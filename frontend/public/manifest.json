@@ -1,11 +1,11 @@
 {
-  "name": "MonM — Secure Messaging",
+  "name": "MonM — Private. Encrypted. Elite.",
   "short_name": "MonM",
-  "description": "Privacy-first, traceable messaging. People say MonM me.",
+  "description": "Secure messaging for the discerning. Send with confidence. Stay untouchable.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#2563eb",
+  "background_color": "#e5ddd5",
+  "theme_color": "#0d2137",
   "orientation": "portrait-primary",
   "icons": [
     {

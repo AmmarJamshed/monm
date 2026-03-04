@@ -18,6 +18,24 @@ export default function SecureFileViewer({ url, mime, mediaId, onClose }: Props)
   const [textContent, setTextContent] = useState<string | null>(null);
   const isNative = useIsNative();
 
+  // Ensure FLAG_SECURE / screenshot block is active when viewing sensitive content (APK)
+  useEffect(() => {
+    if (!isNative) return;
+    let cancelled = false;
+    const enable = async () => {
+      try {
+        const { Capacitor } = await import('@capacitor/core');
+        if (!Capacitor.isNativePlatform() || cancelled) return;
+        const { PrivacyScreen } = await import('@capacitor-community/privacy-screen');
+        await PrivacyScreen.enable();
+      } catch {
+        // Plugin unavailable
+      }
+    };
+    enable();
+    return () => { cancelled = true; };
+  }, [isNative]);
+
   const handleMouseLeave = useCallback(() => setBlurred(true), []);
   const handleMouseEnter = useCallback(() => setBlurred(false), []);
 
@@ -93,16 +111,27 @@ export default function SecureFileViewer({ url, mime, mediaId, onClose }: Props)
           <div className="text-white text-center p-8">
             <p className="mb-4">Preview not available for this file type.</p>
             {mediaId ? (
-              <a
-                href={mediaApi.protectedDownloadUrl(mediaId)}
-                download
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline text-blue-300"
-                title="Checks blockchain when opened; kill switch works even after download"
-              >
-                📎 Download
-              </a>
+              isNative ? (
+                <button
+                  type="button"
+                  onClick={() => { window.location.href = mediaApi.protectedDownloadUrl(mediaId, true); }}
+                  className="underline text-blue-300 hover:text-blue-200"
+                  title="Opens in app with screenshot protection"
+                >
+                  📎 Open protected
+                </button>
+              ) : (
+                <a
+                  href={mediaApi.protectedDownloadUrl(mediaId)}
+                  download
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline text-blue-300"
+                  title="Checks blockchain when opened; kill switch works even after download"
+                >
+                  📎 Download
+                </a>
+              )
             ) : (
               <a href={url} download target="_blank" rel="noopener noreferrer" className="underline text-blue-300">
                 📎 Download
@@ -116,16 +145,27 @@ export default function SecureFileViewer({ url, mime, mediaId, onClose }: Props)
           {isNative ? 'Screenshot protection active' : 'Copy & right-click disabled'}
         </span>
         {mediaId && (
-          <a
-            href={mediaApi.protectedDownloadUrl(mediaId)}
-            download
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm underline text-blue-300 hover:text-blue-200"
-            title="Checks blockchain when opened; kill switch works even after download"
-          >
-            📎 Download
-          </a>
+          isNative ? (
+            <button
+              type="button"
+              onClick={() => { window.location.href = mediaApi.protectedDownloadUrl(mediaId, true); }}
+              className="text-sm underline text-blue-300 hover:text-blue-200"
+              title="Opens in app with screenshot protection"
+            >
+              📎 Open protected
+            </button>
+          ) : (
+            <a
+              href={mediaApi.protectedDownloadUrl(mediaId)}
+              download
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm underline text-blue-300 hover:text-blue-200"
+              title="Checks blockchain when opened; kill switch works even after download"
+            >
+              📎 Download
+            </a>
+          )
         )}
         <button
           onClick={onClose}

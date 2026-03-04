@@ -3,12 +3,13 @@ import './globals.css';
 import PWAInstall from '@/components/PWAInstall';
 import ScreenshotGuard from '@/components/ScreenshotGuard';
 import NativePrivacyScreen from '@/components/NativePrivacyScreen';
+import AdminGate from '@/components/AdminGate';
 
 export const metadata: Metadata = {
-  title: 'MonM — Secure Messaging',
-  description: 'Privacy-first, traceable messaging. People say MonM me.',
+  title: 'MonM — Private. Encrypted. Elite.',
+  description: 'Secure messaging for the discerning. Send with confidence. Stay untouchable.',
   manifest: '/manifest.json',
-  themeColor: '#f8fafc',
+  themeColor: '#0d2137',
   viewport: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover',
 };
 
@@ -21,14 +22,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="manifest" href="/manifest.json" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
       </head>
-      <body className="bg-monm-bg text-monm-dark min-h-screen font-sans antialiased">
+      <body className="bg-[var(--wa-bg)] text-[var(--wa-text)] min-h-screen font-sans antialiased">
         <NativePrivacyScreen />
-        <ScreenshotGuard>
-          {children}
-          <PWAInstall />
-        </ScreenshotGuard>
+        <AdminGate>
+          <ScreenshotGuard>
+            {children}
+            <PWAInstall />
+          </ScreenshotGuard>
+        </AdminGate>
       </body>
     </html>
   );

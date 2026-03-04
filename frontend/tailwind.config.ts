@@ -18,7 +18,8 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ['Outfit', 'DM Sans', 'system-ui', 'sans-serif'],
+        sans: ['Outfit', 'system-ui', 'sans-serif'],
+        display: ['Cormorant Garamond', 'serif'],
       },
       animation: {
         'ping-ring': 'ping-ring 0.8s cubic-bezier(0.4, 0, 0.6, 1) forwards',

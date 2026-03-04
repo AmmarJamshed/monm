@@ -248,43 +248,43 @@ export default function ChatPage() {
 
   return (
     <div className="flex-1 flex flex-col min-h-0">
-      <header className="px-4 py-3 flex items-center gap-3 border-b shrink-0" style={{ background: 'var(--inbox-bg)', borderColor: 'var(--inbox-border)' }}>
-        <button onClick={() => router.back()} className="p-2 -ml-2 rounded-full hover:bg-slate-100 font-bold" style={{ color: 'var(--inbox-text)' }} aria-label="Back">
+      <header className="px-4 py-3 flex items-center gap-3 border-b shrink-0 bg-[var(--wa-header)]">
+        <button onClick={() => router.back()} className="p-2 -ml-2 rounded-full hover:bg-white/10 text-white font-bold" aria-label="Back">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
         </button>
-        <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold shrink-0" style={{ background: 'var(--inbox-blue-bg)', color: 'var(--inbox-blue)' }}>
+        <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold shrink-0 bg-white/20 text-white">
           {(otherParticipant?.name ?? '?')[0]}
         </div>
         <div className="flex-1 min-w-0">
-          <h1 className="font-semibold truncate" style={{ color: 'var(--inbox-text)' }}>{otherParticipant?.name ?? 'Chat'}</h1>
-          <p className="text-xs truncate" style={{ color: 'var(--inbox-text-muted)' }}>Tap for info</p>
+          <h1 className="font-semibold truncate text-white">{otherParticipant?.name ?? 'Chat'}</h1>
+          <p className="text-xs truncate text-white/70">Tap for info</p>
         </div>
         {otherParticipant && (
           <div className="flex items-center gap-1">
-            <button onClick={() => startCall(otherParticipant.id, otherParticipant.name, false)} className="p-2.5 rounded-full hover:bg-slate-100" style={{ color: 'var(--inbox-text)' }} title="Voice call" aria-label="Voice call">
+            <button onClick={() => startCall(otherParticipant.id, otherParticipant.name, false)} className="p-2.5 rounded-full hover:bg-white/10 text-white" title="Voice call" aria-label="Voice call">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
             </button>
-            <button onClick={() => startCall(otherParticipant.id, otherParticipant.name, true)} className="p-2.5 rounded-full hover:bg-slate-100" style={{ color: 'var(--inbox-text)' }} title="Video call" aria-label="Video call">
+            <button onClick={() => startCall(otherParticipant.id, otherParticipant.name, true)} className="p-2.5 rounded-full hover:bg-white/10 text-white" title="Video call" aria-label="Video call">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
             </button>
           </div>
         )}
       </header>
-      <main className="flex-1 overflow-auto p-4 space-y-2" style={{ background: 'var(--inbox-bg-secondary)' }}>
+      <main className="flex-1 overflow-auto p-4 space-y-2 bg-chat-pattern">
         {msgs.length === 0 && (
           <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{ background: 'var(--inbox-blue-bg)' }}>
-              <span className="text-3xl" style={{ color: 'var(--inbox-blue)' }}>👋</span>
+            <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4 bg-[var(--wa-accent)]/15">
+              <span className="text-3xl">👋</span>
             </div>
-            <p className="font-medium mb-1" style={{ color: 'var(--inbox-text)' }}>Say hi to {otherParticipant?.name ?? 'them'}</p>
-            <p className="text-sm mb-6" style={{ color: 'var(--inbox-text-muted)' }}>Send a message to start the conversation</p>
+            <p className="font-medium mb-1 text-[var(--wa-text)]">Say hi to {otherParticipant?.name ?? 'them'}</p>
+            <p className="text-sm mb-6 text-[var(--wa-text-muted)]">Send a message to start the conversation</p>
           </div>
         )}
         {msgsWithDates.map(({ msg: m, showDate }) => (
             <div key={m.id}>
               {showDate && (
                 <div className="flex justify-center my-4">
-                  <span className="px-3 py-1 text-xs font-medium rounded-full" style={{ background: 'var(--inbox-blue-bg)', color: 'var(--inbox-text-muted)' }}>
+                  <span className="px-3 py-1 text-xs font-medium rounded-full bg-white/80 text-[var(--wa-text-muted)]">
                     {formatDateSeparator(m.created_at)}
                   </span>
                 </div>
@@ -309,24 +309,24 @@ export default function ChatPage() {
         ))}
         <div ref={bottomRef} />
       </main>
-      <footer className="p-3 border-t shrink-0 pb-safe" style={{ borderColor: 'var(--inbox-border)', background: 'var(--inbox-bg)' }}>
+      <footer className="p-3 border-t shrink-0 pb-safe bg-white">
         <div className="flex gap-2 items-end min-w-0">
           <div className="flex items-center gap-0.5 shrink-0">
             <input type="file" ref={cameraInputRef} accept="image/*" capture="environment" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) { sendMedia(f); e.target.value = ''; } }} />
-            <button type="button" onClick={() => cameraInputRef.current?.click()} disabled={sending} className="p-2.5 rounded-full hover:bg-slate-100 disabled:opacity-50" style={{ color: 'var(--inbox-text-muted)' }} title="Camera" aria-label="Camera">
+            <button type="button" onClick={() => cameraInputRef.current?.click()} disabled={sending} className="p-2.5 rounded-full hover:bg-gray-100 disabled:opacity-50 text-[var(--wa-text-muted)]" title="Camera" aria-label="Camera">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /></svg>
             </button>
             <input type="file" accept="image/*" className="hidden" id="gallery-picker" onChange={e => { const f = e.target.files?.[0]; if (f) { sendMedia(f); e.target.value = ''; } }} />
-            <button type="button" onClick={() => document.getElementById('gallery-picker')?.click()} disabled={sending} className="p-2.5 rounded-full hover:bg-slate-100 disabled:opacity-50" style={{ color: 'var(--inbox-text-muted)' }} title="Gallery" aria-label="Gallery">
+            <button type="button" onClick={() => document.getElementById('gallery-picker')?.click()} disabled={sending} className="p-2.5 rounded-full hover:bg-gray-100 disabled:opacity-50 text-[var(--wa-text-muted)]" title="Gallery" aria-label="Gallery">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14" /></svg>
             </button>
             <input type="file" accept="*/*" className="hidden" id="file-picker" onChange={e => { const f = e.target.files?.[0]; if (f) { sendMedia(f); e.target.value = ''; } }} />
-            <button type="button" onClick={() => document.getElementById('file-picker')?.click()} disabled={sending} className="p-2.5 rounded-full hover:bg-slate-100 disabled:opacity-50" style={{ color: 'var(--inbox-text-muted)' }} title="Attachment" aria-label="Attachment">
+            <button type="button" onClick={() => document.getElementById('file-picker')?.click()} disabled={sending} className="p-2.5 rounded-full hover:bg-gray-100 disabled:opacity-50 text-[var(--wa-text-muted)]" title="Attachment" aria-label="Attachment">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" /></svg>
             </button>
           </div>
-          <div className="flex-1 flex items-center gap-2 min-w-0 rounded-2xl px-4 py-2" style={{ background: 'var(--inbox-bg-secondary)', border: '1px solid var(--inbox-border)' }}>
-            <label className="flex items-center gap-1.5 text-xs cursor-pointer shrink-0" style={{ color: 'var(--inbox-text-muted)' }} title="Secured download">
+          <div className="flex-1 flex items-center gap-2 min-w-0 rounded-2xl px-4 py-2 bg-gray-100 border border-gray-200">
+            <label className="flex items-center gap-1.5 text-xs cursor-pointer shrink-0 text-[var(--wa-text-muted)]" title="Secured download">
               <input type="checkbox" checked={secureWrapMode} onChange={e => setSecureWrapMode(e.target.checked)} className="rounded" />
               <span>🔒</span>
             </label>
@@ -336,8 +336,7 @@ export default function ChatPage() {
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && !e.shiftKey && send()}
-              className="flex-1 min-w-0 py-1.5 bg-transparent outline-none text-sm"
-              style={{ color: 'var(--inbox-text)' }}
+              className="flex-1 min-w-0 py-1.5 bg-transparent outline-none text-sm text-[var(--wa-text)]"
             />
           </div>
           <button onClick={send} disabled={sending || !input.trim()} className="p-2.5 rounded-full shrink-0 disabled:opacity-50 inbox-btn-primary" title="Send" aria-label="Send">

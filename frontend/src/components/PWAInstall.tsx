@@ -65,19 +65,19 @@ export default function PWAInstall() {
   if (!showBanner || isInstalled) return null;
 
   return (
-    <div className="fixed bottom-20 left-4 right-4 glass-panel-strong text-slate-800 p-4 rounded-2xl shadow-xl z-50 border border-monm-primary/40">
-      <p className="font-semibold">Install MonM</p>
-      <p className="text-sm text-slate-600 mt-0.5">Add to home screen for faster access</p>
+    <div className="fixed bottom-20 left-4 right-4 bg-white p-4 rounded-2xl shadow-xl z-50 border border-[var(--wa-border)]">
+      <p className="font-display font-semibold text-[var(--wa-text)]">Install MonM</p>
+      <p className="text-sm mt-0.5 text-[var(--wa-text-muted)]">Add to home screen for faster access</p>
       <div className="mt-3 flex gap-2">
         <button
           onClick={handleInstall}
-          className="px-4 py-2 bg-gradient-to-r from-monm-primary to-emerald-500 text-slate-900 font-bold rounded-xl hover:opacity-90"
+          className="px-4 py-2 font-bold rounded-xl hover:opacity-90 inbox-btn-primary"
         >
           Install
         </button>
         <button
           onClick={handleDismiss}
-          className="px-4 py-2 bg-slate-100 rounded-xl font-medium hover:bg-slate-200 text-slate-700"
+          className="px-4 py-2 rounded-xl font-medium hover:bg-gray-100 text-[var(--wa-text-muted)]"
         >
           Later
         </button>

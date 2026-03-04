@@ -1,8 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { media as mediaApi } from '@/lib/api';
 import SecureFileViewer from './SecureFileViewer';
+import { useIsNative } from '@/hooks/useIsNative';
 
 type Props = {
   text?: string;
@@ -41,6 +43,8 @@ export default function MessageBubble({
   const [downloadRequested, setDownloadRequested] = useState(false);
   const [canDownload, setCanDownload] = useState<boolean | null>(isMe ? true : null);
   const [viewerOpen, setViewerOpen] = useState(false);
+  const router = useRouter();
+  const isNative = useIsNative();
 
   useEffect(() => {
     if (mediaId && !isMe) {
@@ -79,18 +83,18 @@ export default function MessageBubble({
         {showPing && (
           <div
             className="absolute inset-0 rounded-xl border-2 pointer-events-none animate-ping-ring"
-            style={{ borderColor: 'var(--inbox-blue)', margin: '-4px' }}
+            style={{ borderColor: 'var(--wa-accent)', margin: '-4px' }}
             aria-hidden
           />
         )}
         <div
-          className={`px-4 py-2.5 rounded-xl ${
-            isMe ? 'font-medium' : 'glass-panel-strong border'
+          className={`px-4 py-2.5 rounded-xl shadow-sm ${
+            isMe ? 'font-medium' : ''
           }`}
-          style={isMe ? { background: 'var(--inbox-blue)', color: '#fff' } : { color: 'var(--inbox-text)', borderColor: 'var(--inbox-border)' }}
+          style={isMe ? { background: 'var(--wa-sent)', color: 'var(--wa-text)', borderColor: 'var(--wa-sent-border)' } : { background: '#fff', color: 'var(--wa-text)', borderColor: 'var(--wa-border)' }}
         >
           <div className="flex items-center justify-between gap-2 mb-1">
-            <p className={`text-xs flex-1 min-w-0 truncate ${isMe ? 'opacity-90' : 'text-slate-500'}`} title={fullTime}>
+            <p className={`text-xs flex-1 min-w-0 truncate ${isMe ? 'opacity-90' : 'text-[var(--wa-text-muted)]'}`} title={fullTime}>
               {label} · {time}
             </p>
             <div className="flex items-center gap-1 shrink-0">
@@ -115,16 +119,16 @@ export default function MessageBubble({
             </div>
           </div>
           {isKilled ? (
-            <div className="py-4 px-3 rounded-lg bg-slate-100 text-slate-500 text-sm mt-1">
+            <div className="py-4 px-3 rounded-lg text-sm mt-1 bg-gray-100 text-[var(--wa-text-muted)]">
               Content disabled — leaked. Kill switch activated.
             </div>
-          ) : mediaType === 'image' && imgSrc ? (
+            ) : mediaType === 'image' && imgSrc ? (
             wrap && securedViewerUrl ? (
-              <a
-                href={securedViewerUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block mt-1 rounded-lg overflow-hidden border border-white/20"
+              <button
+                type="button"
+                onClick={() => router.push(securedViewerUrl)}
+                className="block w-full text-left mt-1 rounded-lg overflow-hidden border focus:outline-none"
+                style={{ borderColor: 'rgba(255,255,255,0.2)' }}
               >
                 <img
                   src={imgSrc}
@@ -134,7 +138,7 @@ export default function MessageBubble({
                   style={{ WebkitUserSelect: 'none', userSelect: 'none', pointerEvents: 'none' }}
                 />
                 <span className="text-xs opacity-80 block py-1">Open in secured viewer →</span>
-              </a>
+              </button>
             ) : (
               <button
                 type="button"
@@ -154,18 +158,28 @@ export default function MessageBubble({
             <div className="flex items-center gap-2 mt-1 flex-wrap">
               {wrap && securedViewerUrl ? (
                 <>
-                  <a
-                    href={securedViewerUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <button
+                    type="button"
+                    onClick={() => router.push(securedViewerUrl)}
                     className="text-sm underline hover:opacity-80"
                   >
                     Open in secured viewer
-                  </a>
+                  </button>
                   {protectedDownloadUrl && (
-                    <a href={protectedDownloadUrl} download target="_blank" rel="noopener noreferrer" className="text-sm underline" title="Checks blockchain when opened; kill switch works even after download">
-                      📎 Download
-                    </a>
+                    isNative ? (
+                      <button
+                        type="button"
+                        onClick={() => { window.location.href = mediaApi.protectedDownloadUrl(mediaId!, true); }}
+                        className="text-sm underline hover:opacity-80"
+                        title="Opens in app with screenshot protection"
+                      >
+                        📎 Open protected
+                      </button>
+                    ) : (
+                      <a href={protectedDownloadUrl} download target="_blank" rel="noopener noreferrer" className="text-sm underline" title="Checks blockchain when opened; kill switch works even after download">
+                        📎 Download
+                      </a>
+                    )
                   )}
                 </>
               ) : (
@@ -179,11 +193,22 @@ export default function MessageBubble({
                     View
                   </button>
                   {canDownload && protectedDownloadUrl ? (
-                    <a href={protectedDownloadUrl} download target="_blank" rel="noopener noreferrer" className="text-sm underline" title="Checks blockchain when opened; kill switch works even after download">
-                      📎 Download
-                    </a>
+                    isNative ? (
+                      <button
+                        type="button"
+                        onClick={() => { window.location.href = mediaApi.protectedDownloadUrl(mediaId!, true); }}
+                        className="text-sm underline hover:opacity-80"
+                        title="Opens in app with screenshot protection"
+                      >
+                        📎 Open protected
+                      </button>
+                    ) : (
+                      <a href={protectedDownloadUrl} download target="_blank" rel="noopener noreferrer" className="text-sm underline" title="Checks blockchain when opened; kill switch works even after download">
+                        📎 Download
+                      </a>
+                    )
                   ) : downloadRequested ? (
-                    <span className="text-sm text-slate-500">Download requested</span>
+                    <span className="text-sm text-[var(--wa-text-muted)]">Download requested</span>
                   ) : (
                     <button type="button" onClick={handleFileDownload} className="text-sm underline hover:opacity-80">
                       📎 Request download

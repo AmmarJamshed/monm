@@ -162,6 +162,7 @@ router.get('/:mediaId/protected-download', (req, res) => {
   <p style="font-size:1.25rem;font-weight:600">Content disabled</p>
   <p style="font-size:.875rem;opacity:.8">Kill switch activated. This file is no longer viewable.</p>
 </div>
+<a href="javascript:history.back()" style="position:fixed;top:.5rem;left:.5rem;color:#94a3b8;text-decoration:none;font-size:.875rem;z-index:10">← Back to MonM</a>
 <div id="content" class="content" style="display:none"></div>
 <script>
 (function(){
@@ -207,7 +208,8 @@ fetch(api+"/api/media/fingerprint/"+fp+"/killed").then(function(r){return r.json
 </body>
 </html>`;
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.setHeader('Content-Disposition', 'attachment; filename="monm-protected' + ext + '.html"');
+    const inline = req.query.inline === '1' || req.query.inline === 'true';
+    res.setHeader('Content-Disposition', inline ? 'inline' : 'attachment; filename="monm-protected' + ext + '.html"');
     res.send(html);
   } catch (e) {
     res.status(500).json({ error: e.message });

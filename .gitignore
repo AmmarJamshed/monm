@@ -1,6 +1,8 @@
 node_modules/
 .next/
 .netlify/
+android-sdk/
+releases/
 frontend/.netlify/
 .env
 *.log

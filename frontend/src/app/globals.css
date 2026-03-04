@@ -3,29 +3,62 @@
 @tailwind utilities;
 
 :root {
-  /* Slightly darker palette - soft grays instead of pure white */
-  --inbox-bg: #f4f4f5;
-  --inbox-bg-secondary: #e4e4e7;
-  --inbox-sidebar: #f0f0f1;
-  --inbox-border: #d4d4d8;
-  --inbox-border-light: #e4e4e7;
-  --inbox-text: #1e293b;
-  --inbox-text-muted: #64748b;
-  --inbox-text-light: #94a3b8;
-  --inbox-blue: #128C7E;
-  --inbox-blue-hover: #0d6b60;
-  --inbox-blue-bg: #c8e6c9;
-  --inbox-blue-bg-strong: #a5d6a7;
-  --inbox-radius: 8px;
-  --inbox-radius-lg: 12px;
-  --monm-primary: #2563eb;
-  --monm-secondary: #8B5CF6;
-  --monm-accent: #F472B6;
-  --monm-dark: #1e293b;
-  --monm-bg: #f0f0f1;
-  --monm-glass: rgba(244, 244, 245, 0.98);
-  --monm-glass-border: rgba(212, 212, 216, 0.8);
-  --monm-glow: rgba(37, 99, 235, 0.2);
+  /* Dark blue + white (WhatsApp-like, logo-matching) */
+  --wa-header: #0d2137;
+  --wa-header-light: #1a365d;
+  --wa-bg: #e5ddd5;
+  --wa-bg-pattern: #efeae2;
+  --wa-panel: #ffffff;
+  --wa-border: #e0e0e0;
+  --wa-text: #111b21;
+  --wa-text-muted: #667781;
+  --wa-text-light: #8696a0;
+  --wa-sent: #d9fdd3;
+  --wa-sent-border: #d1f4cc;
+  --wa-accent: #1a365d;
+  --wa-accent-hover: #0d2137;
+  --wa-radius: 8px;
+  --wa-radius-lg: 12px;
+  --wa-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  /* Legacy aliases */
+  --luxury-bg: var(--wa-bg);
+  --luxury-bg-elevated: var(--wa-panel);
+  --luxury-bg-card: var(--wa-panel);
+  --luxury-border: var(--wa-border);
+  --luxury-border-light: #e8e8e8;
+  --luxury-text: var(--wa-text);
+  --luxury-text-muted: var(--wa-text-muted);
+  --luxury-text-light: var(--wa-text-light);
+  --luxury-gold: var(--wa-accent);
+  --luxury-gold-hover: var(--wa-accent-hover);
+  --luxury-gold-bg: rgba(18, 140, 126, 0.12);
+  --luxury-gold-bg-strong: rgba(18, 140, 126, 0.18);
+  --luxury-radius: var(--wa-radius);
+  --luxury-radius-lg: var(--wa-radius-lg);
+  --luxury-shadow: var(--wa-shadow);
+  --luxury-glow: rgba(18, 140, 126, 0.2);
+  --inbox-bg: var(--wa-panel);
+  --inbox-bg-secondary: var(--wa-bg-pattern);
+  --inbox-sidebar: var(--wa-panel);
+  --inbox-border: var(--wa-border);
+  --inbox-border-light: var(--luxury-border-light);
+  --inbox-text: var(--wa-text);
+  --inbox-text-muted: var(--wa-text-muted);
+  --inbox-text-light: var(--wa-text-light);
+  --inbox-blue: var(--wa-accent);
+  --inbox-blue-hover: var(--wa-accent-hover);
+  --inbox-blue-bg: var(--luxury-gold-bg);
+  --inbox-blue-bg-strong: var(--luxury-gold-bg-strong);
+  --inbox-radius: var(--wa-radius);
+  --inbox-radius-lg: var(--wa-radius-lg);
+  --monm-primary: var(--wa-accent);
+  --monm-secondary: var(--wa-header-light);
+  --monm-accent: #25d366;
+  --monm-dark: var(--wa-text);
+  --monm-bg: var(--wa-bg);
+  --monm-glass: rgba(255, 255, 255, 0.98);
+  --monm-glass-border: var(--wa-border);
+  --monm-glow: var(--luxury-glow);
 }
 
 body {
@@ -48,28 +81,44 @@ html { overscroll-behavior-y: contain; }
 /* Mobile safe areas */
 @supports (padding: env(safe-area-inset-bottom)) {
   .pb-safe { padding-bottom: max(0.75rem, env(safe-area-inset-bottom)); }
-  .pt-safe { padding-top: env(safe-area-inset-top); }
+  .pt-safe { padding-top: max(0.5rem, env(safe-area-inset-top)); }
+}
+.safe-top { padding-top: max(0.75rem, env(safe-area-inset-top, 0px)); }
+@media (max-width: 767px) {
+  .main-mobile-pad { padding-top: max(4rem, calc(3.5rem + env(safe-area-inset-top, 0px))); }
+}
+@media (min-width: 768px) {
+  .main-mobile-pad { padding-top: 0; }
 }
 
-/* Inbox-style: flat white/grey, no gradients */
+/* WhatsApp-style chat background */
 .bg-ar-mesh {
-  background: var(--inbox-bg-secondary);
+  background: var(--wa-bg);
   min-height: 100vh;
 }
 
-/* Inbox-style panels - flat white, subtle border */
+/* WhatsApp + Metaverse merged background - subtle gradient + pattern */
+.bg-chat-pattern {
+  background: linear-gradient(165deg, #e8e0d5 0%, #ddd5c8 25%, #e5ddd5 50%, #d8d0c5 75%, #e2dad0 100%);
+  background-color: #e5ddd5;
+  background-image:
+    url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23c4b8a8' fill-opacity='0.35'%3E%3Cpath d='M0 0h40v40H0V0zm40 40h40v40H40V40z'/%3E%3C/g%3E%3Cg fill='%23d4c8b8' fill-opacity='0.25'%3E%3Cpath d='M40 0h40v40H40V0zm0 40h40v40H40V40z'/%3E%3C/g%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M60 0L120 60L60 120L0 60Z' fill='none' stroke='%23c8bca8' stroke-opacity='0.08' stroke-width='0.5'/%3E%3Cpath d='M0 60h120M60 0v120' fill='none' stroke='%23c8bca8' stroke-opacity='0.05' stroke-width='0.3'/%3E%3C/svg%3E");
+}
+
+/* Luxury panels */
 .glass-panel {
-  background: var(--inbox-bg);
-  border: 1px solid var(--inbox-border);
-  border-radius: var(--inbox-radius);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  background: var(--luxury-bg-card);
+  border: 1px solid var(--luxury-border);
+  border-radius: var(--luxury-radius);
+  box-shadow: var(--luxury-shadow);
 }
 
 .glass-panel-strong {
-  background: var(--inbox-bg);
-  border: 1px solid var(--inbox-border);
-  border-radius: var(--inbox-radius-lg);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  background: var(--luxury-bg-card);
+  border: 1px solid var(--luxury-border);
+  border-radius: var(--luxury-radius-lg);
+  box-shadow: var(--luxury-shadow);
 }
 
 /* Ping / radar ring animation */
@@ -89,13 +138,13 @@ html { overscroll-behavior-y: contain; }
   50% { box-shadow: 0 0 24px var(--monm-glow), 0 0 40px var(--monm-glow); }
 }
 
-/* Inbox template utilities */
-.inbox-sidebar { background: var(--inbox-sidebar); border-right: 1px solid var(--inbox-border); }
-.inbox-main { background: var(--inbox-bg); }
-.inbox-selected { background: var(--inbox-blue-bg-strong); }
-.inbox-input { background: var(--inbox-bg-secondary); border: 1px solid var(--inbox-border); border-radius: var(--inbox-radius); }
-.inbox-btn-primary { background: var(--inbox-blue); color: #fff; border-radius: var(--inbox-radius); }
-.inbox-btn-primary:hover { background: var(--inbox-blue-hover); color: #fff; }
+/* WhatsApp-style utilities */
+.inbox-sidebar { background: var(--wa-header); border-right: 1px solid rgba(255,255,255,0.1); }
+.inbox-main { background: var(--wa-bg); }
+.inbox-selected { background: rgba(255,255,255,0.15); }
+.inbox-input { background: var(--wa-panel); border: 1px solid var(--luxury-border); border-radius: var(--luxury-radius); }
+.inbox-btn-primary { background: var(--wa-accent); color: #fff; font-weight: 600; border-radius: var(--luxury-radius); }
+.inbox-btn-primary:hover { background: var(--wa-accent-hover); color: #fff; }
 
 @keyframes float-subtle {
   0%, 100% { transform: translateY(0); }

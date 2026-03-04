@@ -11,6 +11,24 @@ function SecuredWrapperContent() {
   const searchParams = useSearchParams();
   const isNative = useIsNative();
   const mediaId = params.mediaId as string;
+
+  // Ensure FLAG_SECURE / screenshot block is active when viewing (APK)
+  useEffect(() => {
+    if (!isNative) return;
+    let cancelled = false;
+    const enable = async () => {
+      try {
+        const { Capacitor } = await import('@capacitor/core');
+        if (!Capacitor.isNativePlatform() || cancelled) return;
+        const { PrivacyScreen } = await import('@capacitor-community/privacy-screen');
+        await PrivacyScreen.enable();
+      } catch {
+        // Plugin unavailable
+      }
+    };
+    enable();
+    return () => { cancelled = true; };
+  }, [isNative]);
   const token = searchParams.get('token') || (typeof window !== 'undefined' ? localStorage.getItem('monm_token') : null);
   const [status, setStatus] = useState<'loading' | 'killed' | 'ready' | 'error'>('loading');
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
@@ -106,16 +124,27 @@ function SecuredWrapperContent() {
           Secured viewer — {isNative ? 'no screenshots' : 'copy disabled'}
         </span>
         {token && (
-          <a
-            href={`${API}/api/media/${mediaId}/protected-download?token=${encodeURIComponent(token)}`}
-            download
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm underline text-blue-400 hover:text-blue-300"
-            title="Checks blockchain when opened; kill switch works even after download"
-          >
-            📎 Download
-          </a>
+          isNative ? (
+            <button
+              type="button"
+              onClick={() => { window.location.href = `${API}/api/media/${mediaId}/protected-download?token=${encodeURIComponent(token)}&inline=1`; }}
+              className="text-sm underline text-blue-400 hover:text-blue-300"
+              title="Opens in app with screenshot protection"
+            >
+              📎 Open protected
+            </button>
+          ) : (
+            <a
+              href={`${API}/api/media/${mediaId}/protected-download?token=${encodeURIComponent(token)}`}
+              download
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm underline text-blue-400 hover:text-blue-300"
+              title="Checks blockchain when opened; kill switch works even after download"
+            >
+              📎 Download
+            </a>
+          )
         )}
         <a
           href="/"
@@ -164,16 +193,27 @@ function SecuredWrapperContent() {
           <div className="text-slate-400 text-center">
             <p className="mb-4">Preview not available for this file type.</p>
             {token && (
-              <a
-                href={`${API}/api/media/${mediaId}/protected-download?token=${encodeURIComponent(token)}`}
-                download
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline text-blue-400"
-                title="Checks blockchain when opened; kill switch works even after download"
-              >
-                📎 Download
-              </a>
+              isNative ? (
+                <button
+                  type="button"
+                  onClick={() => { window.location.href = `${API}/api/media/${mediaId}/protected-download?token=${encodeURIComponent(token)}&inline=1`; }}
+                  className="underline text-blue-400 hover:text-blue-300"
+                  title="Opens in app with screenshot protection"
+                >
+                  📎 Open protected
+                </button>
+              ) : (
+                <a
+                  href={`${API}/api/media/${mediaId}/protected-download?token=${encodeURIComponent(token)}`}
+                  download
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline text-blue-400"
+                  title="Checks blockchain when opened; kill switch works even after download"
+                >
+                  📎 Download
+                </a>
+              )
             )}
           </div>
         )}

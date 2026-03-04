@@ -64,38 +64,36 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-ar-mesh">
+    <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-[var(--wa-bg)]">
       <div className="w-full max-w-sm">
         <div className="flex justify-center mb-4">
           <img src="/icon-192.png" alt="MonM" className="h-20 w-auto object-contain" width={80} height={80} />
         </div>
-        <h1 className="text-5xl font-bold text-center mb-2" style={{ color: 'var(--inbox-blue)' }}>
+        <h1 className="font-display text-5xl font-bold text-center mb-2 tracking-tight text-[var(--wa-header)]">
           MonM
         </h1>
-        <p className="text-center text-slate-600 text-sm mb-8 font-medium">Privacy-first · Encrypted · Stay connected ✨</p>
+        <p className="text-center text-[var(--wa-text-muted)] text-sm mb-8 font-medium">Private · Encrypted · Elite</p>
 
         <div className="flex gap-2 mb-1">
           <button
             className={`flex-1 py-3 rounded-t-2xl font-semibold transition-all duration-300 ${
-              view === 'login' ? 'glass-panel-strong border-2' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100/80'
+              view === 'login' ? 'bg-white border-2 border-[var(--wa-accent)] text-[var(--wa-accent)] shadow' : 'text-[var(--wa-text-muted)] hover:text-[var(--wa-text)]'
             }`}
-            style={view === 'login' ? { borderColor: 'var(--inbox-blue)', color: 'var(--inbox-blue)' } : {}}
             onClick={() => { setView('login'); setError(''); }}
           >
             Sign In
           </button>
           <button
             className={`flex-1 py-3 rounded-t-2xl font-semibold transition-all duration-300 ${
-              view === 'signup' ? 'glass-panel-strong border-2' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100/80'
+              view === 'signup' ? 'bg-white border-2 border-[var(--wa-accent)] text-[var(--wa-accent)] shadow' : 'text-[var(--wa-text-muted)] hover:text-[var(--wa-text)]'
             }`}
-            style={view === 'signup' ? { borderColor: 'var(--inbox-blue)', color: 'var(--inbox-blue)' } : {}}
             onClick={() => { setView('signup'); setError(''); }}
           >
             Sign Up
           </button>
         </div>
 
-        <div className="glass-panel-strong p-6 rounded-b-2xl rounded-tl-2xl" style={{ borderColor: 'var(--inbox-border)' }}>
+        <div className="bg-white p-6 rounded-b-2xl rounded-tl-2xl shadow-lg border border-[var(--wa-border)]">
           {view === 'signup' ? (
             <form onSubmit={handleSignup} className="space-y-4">
               <input
@@ -103,7 +101,7 @@ export default function Home() {
                 placeholder="Your name"
                 value={name}
                 onChange={e => setName(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-monm-primary focus:border-monm-primary/50 outline-none transition"
+                className="w-full px-4 py-3 rounded-xl bg-[var(--luxury-bg-elevated)] border border-[var(--luxury-border)] text-[var(--luxury-text)] placeholder-[var(--luxury-text-light)] focus:ring-2 focus:ring-[var(--luxury-gold)] focus:border-[var(--luxury-gold)]/50 outline-none transition"
                 required
               />
               <div className="flex gap-2">
@@ -111,9 +109,9 @@ export default function Home() {
                   type="button"
                   onClick={() => { setSignupMode('phone'); setError(''); }}
                   className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all ${
-                    signupMode === 'phone' ? 'border-2' : 'bg-slate-100 text-slate-500 border border-slate-200 hover:border-slate-300'
+                    signupMode === 'phone' ? 'border-2' : 'bg-gray-50 text-[var(--wa-text-muted)] border border-[var(--wa-border)]'
                   }`}
-                  style={signupMode === 'phone' ? { background: 'var(--inbox-blue-bg)', color: 'var(--inbox-blue)', borderColor: 'var(--inbox-blue)' } : {}}
+                  style={signupMode === 'phone' ? { background: 'rgba(26,54,93,0.1)', color: 'var(--wa-accent)', borderColor: 'var(--wa-accent)' } : {}}
                 >
                   Phone
                 </button>
@@ -121,9 +119,9 @@ export default function Home() {
                   type="button"
                   onClick={() => { setSignupMode('username'); setError(''); }}
                   className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all ${
-                    signupMode === 'username' ? 'border-2' : 'bg-slate-100 text-slate-500 border border-slate-200 hover:border-slate-300'
+                    signupMode === 'username' ? 'border-2' : 'bg-gray-50 text-[var(--wa-text-muted)] border border-[var(--wa-border)]'
                   }`}
-                  style={signupMode === 'username' ? { background: 'var(--inbox-blue-bg)', color: 'var(--inbox-blue)', borderColor: 'var(--inbox-blue)' } : {}}
+                  style={signupMode === 'username' ? { background: 'rgba(26,54,93,0.1)', color: 'var(--wa-accent)', borderColor: 'var(--wa-accent)' } : {}}
                 >
                   Username
                 </button>
@@ -134,7 +132,7 @@ export default function Home() {
                   placeholder="Phone number"
                   value={phone}
                   onChange={e => setPhone(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-monm-primary focus:border-monm-primary/50 outline-none transition"
+                  className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-[var(--wa-border)] text-[var(--wa-text)] placeholder-[var(--wa-text-muted)] focus:ring-2 focus:ring-[var(--wa-accent)]/30 outline-none transition"
                   required
                 />
               ) : (
@@ -143,7 +141,7 @@ export default function Home() {
                   placeholder="Username (letters, numbers, _ -)"
                   value={username}
                   onChange={e => setUsername(e.target.value.replace(/[^a-zA-Z0-9_-]/g, ''))}
-                  className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-monm-primary focus:border-monm-primary/50 outline-none transition"
+                  className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-[var(--wa-border)] text-[var(--wa-text)] placeholder-[var(--wa-text-muted)] focus:ring-2 focus:ring-[var(--wa-accent)]/30 outline-none transition"
                   minLength={3}
                   required
                 />
@@ -163,9 +161,9 @@ export default function Home() {
                   type="button"
                   onClick={() => { setLoginMode('phone'); setError(''); }}
                   className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all ${
-                    loginMode === 'phone' ? 'border-2' : 'bg-slate-100 text-slate-500 border border-slate-200 hover:border-slate-300'
+                    loginMode === 'phone' ? 'border-2' : 'bg-gray-50 text-[var(--wa-text-muted)] border border-[var(--wa-border)]'
                   }`}
-                  style={loginMode === 'phone' ? { background: 'var(--inbox-blue-bg)', color: 'var(--inbox-blue)', borderColor: 'var(--inbox-blue)' } : {}}
+                  style={loginMode === 'phone' ? { background: 'rgba(26,54,93,0.1)', color: 'var(--wa-accent)', borderColor: 'var(--wa-accent)' } : {}}
                 >
                   Phone
                 </button>
@@ -173,9 +171,9 @@ export default function Home() {
                   type="button"
                   onClick={() => { setLoginMode('username'); setError(''); }}
                   className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all ${
-                    loginMode === 'username' ? 'border-2' : 'bg-slate-100 text-slate-500 border border-slate-200 hover:border-slate-300'
+                    loginMode === 'username' ? 'border-2' : 'bg-gray-50 text-[var(--wa-text-muted)] border border-[var(--wa-border)]'
                   }`}
-                  style={loginMode === 'username' ? { background: 'var(--inbox-blue-bg)', color: 'var(--inbox-blue)', borderColor: 'var(--inbox-blue)' } : {}}
+                  style={loginMode === 'username' ? { background: 'rgba(26,54,93,0.1)', color: 'var(--wa-accent)', borderColor: 'var(--wa-accent)' } : {}}
                 >
                   Username
                 </button>
@@ -186,7 +184,7 @@ export default function Home() {
                   placeholder="Phone number"
                   value={phone}
                   onChange={e => setPhone(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-monm-primary focus:border-monm-primary/50 outline-none transition"
+                  className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-[var(--wa-border)] text-[var(--wa-text)] placeholder-[var(--wa-text-muted)] focus:ring-2 focus:ring-[var(--wa-accent)]/30 outline-none transition"
                   required
                 />
               ) : (
@@ -195,7 +193,7 @@ export default function Home() {
                   placeholder="Username"
                   value={username}
                   onChange={e => setUsername(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-monm-primary focus:border-monm-primary/50 outline-none transition"
+                  className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-[var(--wa-border)] text-[var(--wa-text)] placeholder-[var(--wa-text-muted)] focus:ring-2 focus:ring-[var(--wa-accent)]/30 outline-none transition"
                   required
                 />
               )}
@@ -208,7 +206,7 @@ export default function Home() {
               </button>
             </form>
           )}
-          {error && <p className="mt-3 text-monm-accent text-sm font-medium">{error}</p>}
+          {error && <p className="mt-3 text-rose-400 text-sm font-medium">{error}</p>}
         </div>
       </div>
     </div>
