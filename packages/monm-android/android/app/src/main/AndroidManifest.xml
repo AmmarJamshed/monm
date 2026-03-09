@@ -30,7 +30,8 @@
             android:theme="@style/AppTheme.NoActionBarLaunch"
             android:exported="true">
 
-            <intent-filter>
+            <!-- MonM protected files (photos, videos in HTML) - high priority so "Open with" prefers MonM -->
+            <intent-filter android:priority="999">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />

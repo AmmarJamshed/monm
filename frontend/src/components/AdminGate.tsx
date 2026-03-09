@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 
 const STORAGE_KEY = 'monm_admin_gate';
+const PUBLIC_PATHS = ['/privacy'];
 const ADMIN_USER = process.env.NEXT_PUBLIC_ADMIN_USER || 'ammarjamshed';
 const ADMIN_PASS = process.env.NEXT_PUBLIC_ADMIN_PASS || 'JacktheRipper1997!';
 
@@ -11,8 +13,13 @@ const ADMIN_PASS = process.env.NEXT_PUBLIC_ADMIN_PASS || 'JacktheRipper1997!';
  * requires admin credentials before showing the app. APK bypasses this.
  */
 export default function AdminGate({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
   const [passed, setPassed] = useState<boolean | null>(null);
   const [isNative, setIsNative] = useState<boolean | null>(null);
+
+  if (pathname && PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
+    return <>{children}</>;
+  }
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');

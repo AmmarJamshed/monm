@@ -146,23 +146,27 @@ router.get('/:mediaId/protected-download', (req, res) => {
 
     const base64 = buf.toString('base64');
     const isImage = mime.startsWith('image/');
+    const isVideo = mime.includes('video');
     const isPdf = mime.includes('pdf');
     const html = `<!DOCTYPE html>
 <html lang="en">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>MonM Protected File</title>
 <style>body{margin:0;font-family:system-ui,sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:1rem}
 .killed{color:#f87171;text-align:center;max-width:24rem}
-.content img{max-width:100%;max-height:90vh;object-fit:contain}
+.content img,.content video{max-width:100%;max-height:90vh;object-fit:contain}
 .content embed{width:100%;height:90vh}
+.content video{width:100%;max-height:90vh}
+.banner{position:fixed;top:0;left:0;right:0;background:#1e3a5f;color:#94a3b8;padding:.5rem 1rem;font-size:.8rem;text-align:center;z-index:11}
 .dl{display:inline-block;margin-top:1rem;padding:.5rem 1rem;background:#3b82f6;color:#fff;border-radius:.5rem;text-decoration:none}
 .dl:hover{background:#2563eb}</style>
 </head>
 <body>
+<div class="banner">Open in <strong>MonM app</strong> for screenshot protection</div>
 <div id="status" class="killed" style="display:none">
   <p style="font-size:1.25rem;font-weight:600">Content disabled</p>
   <p style="font-size:.875rem;opacity:.8">Kill switch activated. This file is no longer viewable.</p>
 </div>
-<a href="javascript:history.back()" style="position:fixed;top:.5rem;left:.5rem;color:#94a3b8;text-decoration:none;font-size:.875rem;z-index:10">← Back to MonM</a>
+<a href="javascript:history.back()" style="position:fixed;top:2rem;left:.5rem;color:#94a3b8;text-decoration:none;font-size:.875rem;z-index:10">← Back to MonM</a>
 <div id="content" class="content" style="display:none"></div>
 <script>
 (function(){
@@ -171,6 +175,7 @@ var api="${apiBase}";
 var b64="${base64}";
 var mime="${mime.replace(/"/g, '\\"')}";
 var isImg=${isImage};
+var isVid=${isVideo};
 var isPdf=${isPdf};
 var ext="${ext.replace(/"/g, '\\"')}";
 fetch(api+"/api/media/fingerprint/"+fp+"/killed").then(function(r){return r.json()}).then(function(d){
@@ -189,7 +194,16 @@ fetch(api+"/api/media/fingerprint/"+fp+"/killed").then(function(r){return r.json
     var img=document.createElement("img");
     img.src=url;
     img.alt="";
+    img.style.pointerEvents="none";
+    img.draggable=false;
     content.appendChild(img);
+  }else if(isVid){
+    var vid=document.createElement("video");
+    vid.src=url;
+    vid.controls=true;
+    vid.controlsList="nodownload";
+    vid.style.pointerEvents="auto";
+    content.appendChild(vid);
   }else if(isPdf){
     var emb=document.createElement("embed");
     emb.src=url;
@@ -199,7 +213,7 @@ fetch(api+"/api/media/fingerprint/"+fp+"/killed").then(function(r){return r.json
     var msg=document.createElement("p");
     msg.className="dl";
     msg.style.marginTop="1rem";
-    msg.innerHTML="This file type cannot be previewed here. <strong>Open in MonM app</strong> to view. Offline download is disabled so the kill switch works when you activate it.";
+    msg.innerHTML="This file type cannot be previewed here. <strong>Open in MonM app</strong> to view.";
     content.appendChild(msg);
   }
 }).catch(function(){document.getElementById("status").style.display="block";document.getElementById("status").innerHTML="<p>Unable to verify. Open from MonM.</p>";});

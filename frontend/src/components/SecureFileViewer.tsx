@@ -114,11 +114,11 @@ export default function SecureFileViewer({ url, mime, mediaId, onClose }: Props)
               isNative ? (
                 <button
                   type="button"
-                  onClick={() => { window.location.href = mediaApi.protectedDownloadUrl(mediaId, true); }}
+                  onClick={() => { window.location.href = `/protected-view/${mediaId}`; }}
                   className="underline text-blue-300 hover:text-blue-200"
-                  title="Opens in app with screenshot protection"
+                  title="View in app — screenshots blocked"
                 >
-                  📎 Open protected
+                  📎 View
                 </button>
               ) : (
                 <a
@@ -148,11 +148,11 @@ export default function SecureFileViewer({ url, mime, mediaId, onClose }: Props)
           isNative ? (
             <button
               type="button"
-              onClick={() => { window.location.href = mediaApi.protectedDownloadUrl(mediaId, true); }}
+              onClick={() => { window.location.href = `/protected-view/${mediaId}`; }}
               className="text-sm underline text-blue-300 hover:text-blue-200"
-              title="Opens in app with screenshot protection"
+              title="View in app — screenshots blocked"
             >
-              📎 Open protected
+              📎 View
             </button>
           ) : (
             <a

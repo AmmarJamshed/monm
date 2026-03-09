@@ -19,7 +19,14 @@ Private Sub Workbook_Open()
             MsgBox "Content disabled - kill switch activated.", vbExclamation, "MonM"
             Application.Visible = False
             ThisWorkbook.Close SaveChanges:=False
+            Application.Quit
             End
         End If
     End If
+    ' Prohibit copy/cut - allow paste only
+    Application.OnKey "^c", ""
+    Application.OnKey "^x", ""
+    Application.OnKey "+{DEL}", ""
+    Application.OnKey "^{INSERT}", ""
+    Application.CellDragAndDrop = False
 End Sub

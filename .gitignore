@@ -3,6 +3,9 @@ node_modules/
 .netlify/
 android-sdk/
 releases/
+*.keystore
+*.jks
+packages/monm-android/android/keystore.properties
 frontend/.netlify/
 .env
 *.log

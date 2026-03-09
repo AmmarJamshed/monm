@@ -127,11 +127,11 @@ function SecuredWrapperContent() {
           isNative ? (
             <button
               type="button"
-              onClick={() => { window.location.href = `${API}/api/media/${mediaId}/protected-download?token=${encodeURIComponent(token)}&inline=1`; }}
+              onClick={() => { window.location.href = `/protected-view/${mediaId}`; }}
               className="text-sm underline text-blue-400 hover:text-blue-300"
-              title="Opens in app with screenshot protection"
+              title="View in app — screenshots blocked"
             >
-              📎 Open protected
+              📎 View protected
             </button>
           ) : (
             <a
@@ -196,11 +196,11 @@ function SecuredWrapperContent() {
               isNative ? (
                 <button
                   type="button"
-                  onClick={() => { window.location.href = `${API}/api/media/${mediaId}/protected-download?token=${encodeURIComponent(token)}&inline=1`; }}
+                  onClick={() => { window.location.href = `/protected-view/${mediaId}`; }}
                   className="underline text-blue-400 hover:text-blue-300"
-                  title="Opens in app with screenshot protection"
+                  title="View in app — screenshots blocked"
                 >
-                  📎 Open protected
+                  📎 View protected
                 </button>
               ) : (
                 <a

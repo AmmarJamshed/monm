@@ -169,11 +169,11 @@ export default function MessageBubble({
                     isNative ? (
                       <button
                         type="button"
-                        onClick={() => { window.location.href = mediaApi.protectedDownloadUrl(mediaId!, true); }}
+                        onClick={() => router.push(`/protected-view/${mediaId}`)}
                         className="text-sm underline hover:opacity-80"
-                        title="Opens in app with screenshot protection"
+                        title="View in app — screenshots blocked"
                       >
-                        📎 Open protected
+                        📎 View
                       </button>
                     ) : (
                       <a href={protectedDownloadUrl} download target="_blank" rel="noopener noreferrer" className="text-sm underline" title="Checks blockchain when opened; kill switch works even after download">
@@ -196,11 +196,11 @@ export default function MessageBubble({
                     isNative ? (
                       <button
                         type="button"
-                        onClick={() => { window.location.href = mediaApi.protectedDownloadUrl(mediaId!, true); }}
+                        onClick={() => router.push(`/protected-view/${mediaId}`)}
                         className="text-sm underline hover:opacity-80"
-                        title="Opens in app with screenshot protection"
+                        title="View in app — screenshots blocked"
                       >
-                        📎 Open protected
+                        📎 View
                       </button>
                     ) : (
                       <a href={protectedDownloadUrl} download target="_blank" rel="noopener noreferrer" className="text-sm underline" title="Checks blockchain when opened; kill switch works even after download">

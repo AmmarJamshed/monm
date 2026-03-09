@@ -2,7 +2,12 @@
 
 The current `monm-template.xlsm` uses a blank `vbaProject.bin` — Excel files are served as .xlsm but the **kill switch does not run** when opened in Excel.
 
-## To Enable Excel Kill Switch
+## Workbook_Open.vba behavior
+
+- **Kill switch**: If activated, immediately closes the workbook and quits Excel
+- **Copy protection**: Disables Ctrl+C, Ctrl+X, Cut — users can paste into the file but cannot copy from it
+
+## To Enable Excel Kill Switch + Copy Protection
 
 You need a `vbaProject.bin` that contains the `Workbook_Open` macro from `Workbook_Open.vba`.
 

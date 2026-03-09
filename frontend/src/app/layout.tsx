@@ -9,8 +9,15 @@ export const metadata: Metadata = {
   title: 'MonM — Private. Encrypted. Elite.',
   description: 'Secure messaging for the discerning. Send with confidence. Stay untouchable.',
   manifest: '/manifest.json',
+};
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover' as const,
   themeColor: '#0d2137',
-  viewport: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
