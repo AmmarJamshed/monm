@@ -16,16 +16,14 @@ export default function AdminGate({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [passed, setPassed] = useState<boolean | null>(null);
   const [isNative, setIsNative] = useState<boolean | null>(null);
-
-  if (pathname && PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
-    return <>{children}</>;
-  }
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
+  const isPublicPath = pathname && PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(p + '/'));
+
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined' || isPublicPath) return;
     const check = async () => {
       try {
         const { Capacitor } = await import('@capacitor/core');
@@ -42,7 +40,11 @@ export default function AdminGate({ children }: { children: React.ReactNode }) {
       setPassed(stored === '1');
     };
     check();
-  }, []);
+  }, [isPublicPath]);
+
+  if (isPublicPath) {
+    return <>{children}</>;
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
