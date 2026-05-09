@@ -1,18 +1,13 @@
 import Database from 'better-sqlite3';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import fs from 'fs';
+import { config } from '../src/config/index.js';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DATA_ROOT = process.env.DATA_ROOT || process.env.DB_PATH?.replace(/[\\/]monm\.db.*$/, '') || path.join(__dirname, '..', '..');
-const DB_PATH = path.join(DATA_ROOT, 'db', 'monm.db');
-
-if (!fs.existsSync(DB_PATH)) {
+if (!fs.existsSync(config.dbPath)) {
   console.log('No database found. Run db:init first.');
   process.exit(0);
 }
 
-const db = new Database(DB_PATH);
+const db = new Database(config.dbPath);
 
 const cols = db.prepare('PRAGMA table_info(users)').all();
 const hasUsername = cols.some(c => c.name === 'username');

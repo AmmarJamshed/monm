@@ -1,14 +1,15 @@
-# Render FREE tier - no disk (data lost on restart). For testing only.
+# Alias of render.yaml — free tier, paths resolved automatically (no DATA_ROOT / DB_PATH required).
+
 services:
   - type: web
     name: monm-api
     runtime: node
     region: oregon
+    plan: free
 
     rootDir: backend
     buildCommand: npm install
-    startCommand: node src/index.js
-    preDeployCommand: node scripts/init-db.js
+    startCommand: node scripts/init-db.js && node src/index.js
 
     healthCheckPath: /api/health
 
@@ -21,7 +22,3 @@ services:
         value: https://monm-secure-messaging.netlify.app
       - key: CORS_ORIGINS
         value: https://monm-secure-messaging.netlify.app
-      - key: DATA_ROOT
-        value: /tmp/monm
-      - key: DB_PATH
-        value: /tmp/monm/db/monm.db

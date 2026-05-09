@@ -2,12 +2,14 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
+import { resolveDataRoot, resolveDbPath, envDirOrFallback } from '../paths.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const monmRoot = path.resolve(__dirname, '../../../');
 dotenv.config({ path: path.join(monmRoot, '.env') });
 
-const DATA_ROOT = process.env.DATA_ROOT || 'D:\\monm';
+const DATA_ROOT = resolveDataRoot();
+const dbPath = resolveDbPath(DATA_ROOT);
 
 export const config = {
   port: parseInt(process.env.PORT || '3001', 10),
@@ -16,11 +18,11 @@ export const config = {
   corsOrigins: process.env.CORS_ORIGINS
     ? process.env.CORS_ORIGINS.split(',').map((o) => o.trim())
     : [process.env.PWA_URL || 'http://localhost:3000'],
-  dbPath: process.env.DB_PATH || path.join(DATA_ROOT, 'db', 'monm.db'),
-  logPath: process.env.LOG_PATH || path.join(DATA_ROOT, 'logs'),
-  uploadPath: process.env.UPLOAD_PATH || path.join(DATA_ROOT, 'uploads'),
-  tmpPath: process.env.TMP_PATH || path.join(DATA_ROOT, 'tmp'),
-  keysPath: process.env.KEYS_PATH || path.join(DATA_ROOT, 'keys'),
+  dbPath,
+  logPath: envDirOrFallback('LOG_PATH', path.join(DATA_ROOT, 'logs')),
+  uploadPath: envDirOrFallback('UPLOAD_PATH', path.join(DATA_ROOT, 'uploads')),
+  tmpPath: envDirOrFallback('TMP_PATH', path.join(DATA_ROOT, 'tmp')),
+  keysPath: envDirOrFallback('KEYS_PATH', path.join(DATA_ROOT, 'keys')),
   polygon: {
     rpcUrl: process.env.POLYGON_RPC_URL || 'https://rpc-amoy.polygon.technology',
     rpcKey: process.env.POLYGON_RPC_KEY,

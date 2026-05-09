@@ -8,7 +8,13 @@ import fs from 'fs';
 
 const SERP_API = 'https://serpapi.com/search';
 const API_KEY = process.env.SERP_API_KEY;
-const DATA_ROOT = process.env.DATA_ROOT || 'D:\\monm';
+const DATA_ROOT =
+  process.env.DATA_ROOT?.trim() ||
+  (process.env.RENDER === 'true'
+    ? path.join(process.cwd(), 'data', 'monm')
+    : process.platform === 'win32'
+      ? 'D:\\monm'
+      : path.join(process.cwd(), 'data', 'monm'));
 const LOG_PATH = path.join(DATA_ROOT, 'logs', 'serp-scan.log');
 
 function log(msg) {

@@ -1,17 +1,7 @@
 import Database from 'better-sqlite3';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { config } from '../src/config/index.js';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DATA_ROOT = process.env.DATA_ROOT || process.env.DB_PATH?.replace(/[\\/]monm\.db.*$/, '') || 'D:\\monm';
-const DB_PATH = path.join(DATA_ROOT, 'db', 'monm.db');
-
-// Ensure directory exists
-import fs from 'fs';
-const dbDir = path.dirname(DB_PATH);
-if (!fs.existsSync(dbDir)) fs.mkdirSync(dbDir, { recursive: true });
-
-const db = new Database(DB_PATH);
+const db = new Database(config.dbPath);
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS users (
@@ -117,7 +107,7 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_permission_requests_media ON permission_requests(media_id);
 `);
 
-console.log('Database initialized at', DB_PATH);
+console.log('Database initialized at', config.dbPath);
 
 // Run migrations
 let mediaCols = [];

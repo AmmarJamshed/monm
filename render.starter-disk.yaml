@@ -1,19 +1,24 @@
-# Render Blueprint — MonM Backend (Free tier, no persistent disk)
-# SQLite and uploads live under backend/data/monm on the instance (ephemeral).
-# For production persistence, use render.starter-disk.yaml + Starter plan or an external DB.
+# Render Blueprint — MonM Backend (Starter + persistent disk)
+# Use this blueprint when you need data to survive restarts/deploys.
+# Mount path must match DATA_ROOT / DB_PATH below.
 
 services:
   - type: web
     name: monm-api
     runtime: node
     region: oregon
-    plan: free
+    plan: starter
 
     rootDir: backend
     buildCommand: npm install
     startCommand: node scripts/init-db.js && node src/index.js
 
     healthCheckPath: /api/health
+
+    disk:
+      name: monm-data
+      mountPath: /var/data
+      sizeGB: 1
 
     envVars:
       - key: NODE_ENV
@@ -26,3 +31,7 @@ services:
         value: https://monm-secure-messaging.netlify.app
       - key: API_PUBLIC_URL
         value: https://monm-api.onrender.com
+      - key: DATA_ROOT
+        value: /var/data/monm
+      - key: DB_PATH
+        value: /var/data/monm/db/monm.db
